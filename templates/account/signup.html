@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load allauth i18n %}
+
+{% block title %}Create Account — IronForge{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding: calc(var(--nav-h) + 40px) 24px 80px;">
+  <div style="width:100%; max-width:520px;">
+
+    <div style="text-align:center; margin-bottom:40px;">
+      <a href="/" class="nav-logo" style="font-size:2.2rem; display:inline-block; margin-bottom:16px;">IRON<span>FORGE</span></a>
+      <h2 style="font-size:1.8rem; margin-bottom:8px;">Start Your Journey</h2>
+      <p style="font-size:.95rem;">Create your free account and start transforming today.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding:36px;">
+
+        {% if form.errors %}
+        <div style="padding:12px 16px; background:rgba(239,68,68,.1); border:1px solid var(--danger); border-radius:var(--radius); margin-bottom:20px; color:var(--danger); font-size:.9rem;">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          {% for field in form %}{% for error in field.errors %}<div>{{ field.label }}: {{ error }}</div>{% endfor %}{% endfor %}
+          {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'account_signup' %}">
+          {% csrf_token %}
+          {{ redirect_field }}
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input type="text" name="first_name" class="form-control"
+                placeholder="John" value="{{ form.first_name.value|default:'' }}" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input type="text" name="last_name" class="form-control"
+                placeholder="Doe" value="{{ form.last_name.value|default:'' }}" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email Address <span style="color:var(--danger)">*</span></label>
+            <input type="email" name="email" class="form-control"
+              placeholder="you@example.com" autofocus
+              value="{{ form.email.value|default:'' }}" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password <span style="color:var(--danger)">*</span></label>
+            <input type="password" name="password1" class="form-control"
+              placeholder="Min 8 characters" required />
+            <p style="font-size:.78rem; margin-top:4px; max-width:none; color:var(--muted);">
+              At least 8 characters. Can't be entirely numeric.
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Confirm Password <span style="color:var(--danger)">*</span></label>
+            <input type="password" name="password2" class="form-control"
+              placeholder="Repeat your password" required />
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full btn-lg">
+            <i class="bi bi-lightning-charge-fill"></i> Create Free Account
+          </button>
+
+          <p style="text-align:center; font-size:.78rem; margin-top:16px; max-width:none; color:var(--muted);">
+            By registering you agree to our
+            <a href="#" style="color:var(--primary);">Terms</a> &amp;
+            <a href="#" style="color:var(--primary);">Privacy Policy</a>.
+          </p>
+        </form>
+
+        <div style="text-align:center; margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
+          <p style="font-size:.9rem; max-width:none;">
+            Already have an account?
+            <a href="{% url 'account_login' %}" style="color:var(--primary); font-weight:600;">Sign in</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

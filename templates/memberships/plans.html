@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Membership Plans — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 80px); padding-bottom:100px">
+  <div class="container">
+    <div class="section-header center">
+      <h2>MEMBERSHIP <em style="color:var(--primary)">PLANS</em></h2>
+      <p>Invest in yourself. No hidden fees. Cancel anytime.</p>
+    </div>
+    {% if current_membership %}
+    <div style="text-align:center; margin-bottom:40px; padding:16px 24px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); display:inline-flex; align-items:center; gap:12px; left:50%; position:relative; transform:translateX(-50%)">
+      <i class="bi bi-check-circle-fill" style="color:var(--success)"></i>
+      <span>You have an active <strong>{{ current_membership.plan.display_name }}</strong> plan — {{ current_membership.days_remaining }} days remaining.</span>
+    </div>
+    {% endif %}
+    <div class="grid-3" style="max-width:1000px; margin: 0 auto">
+      {% for plan in plans %}
+      <div class="pricing-card {% if plan.name == 'premium' %}featured{% endif %}" data-aos>
+        {% if plan.name == 'premium' %}<div class="pricing-badge">MOST POPULAR</div>{% endif %}
+        <div>
+          <div class="pricing-name">{{ plan.display_name|upper }}</div>
+          <div style="color:var(--text-dim); font-size:.88rem; margin-top:4px">{{ plan.get_billing_cycle_display }}</div>
+          <div class="pricing-price" style="margin-top:12px">
+            <div class="pricing-amount">${{ plan.price }}</div>
+            <div class="pricing-period">/mo</div>
+          </div>
+        </div>
+        <ul class="pricing-features">
+          {% for feat in plan.features %}
+          <li><i class="bi bi-check-circle-fill"></i>{{ feat }}</li>
+          {% endfor %}
+        </ul>
+        {% if user.is_authenticated %}
+          <a href="{% url 'checkout' plan.id %}" class="btn {% if plan.name == 'premium' %}btn-primary{% else %}btn-ghost{% endif %} btn-full">
+            {% if current_membership and current_membership.plan == plan %}Current Plan{% else %}Get Started{% endif %}
+          </a>
+        {% else %}
+          <a href="{% url 'account_signup' %}?next={% url 'checkout' plan.id %}" class="btn {% if plan.name == 'premium' %}btn-primary{% else %}btn-ghost{% endif %} btn-full">
+            Join & Subscribe
+          </a>
+        {% endif %}
+      </div>
+      {% empty %}
+      <div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-dim)">
+        No plans available yet. Check back soon.
+      </div>
+      {% endfor %}
+    </div>
+    <div style="text-align:center; margin-top:60px">
+      <p style="font-size:.9rem; margin:0 auto 8px">🔒 Secured by Stripe &nbsp;·&nbsp; ✓ Cancel anytime &nbsp;·&nbsp; 💳 All major cards accepted</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

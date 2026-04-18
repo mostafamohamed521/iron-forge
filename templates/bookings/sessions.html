@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Book a Session — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container">
+
+    <div style="margin-bottom:40px">
+      <h1 class="page-title">BOOK A <em style="color:var(--primary)">SESSION</em></h1>
+      <p class="page-subtitle">Train with elite coaches. Personal, group, and online sessions available.</p>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:40px; align-items:flex-end; padding:20px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg)">
+      <div style="flex:1; min-width:140px">
+        <label class="form-label">Session Type</label>
+        <select name="type" class="form-control" onchange="this.form.submit()">
+          <option value="">All Types</option>
+          {% for val, label in session_types %}<option value="{{ val }}" {% if request.GET.type == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div style="flex:1; min-width:160px">
+        <label class="form-label">Trainer</label>
+        <select name="trainer" class="form-control" onchange="this.form.submit()">
+          <option value="">All Trainers</option>
+          {% for trainer in trainers %}<option value="{{ trainer.id }}" {% if request.GET.trainer == trainer.id|stringformat:"s" %}selected{% endif %}>{{ trainer.get_full_name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div style="flex:1; min-width:140px">
+        <label class="form-label">Date</label>
+        <input type="date" name="date" class="form-control" value="{{ request.GET.date }}" onchange="this.form.submit()" />
+      </div>
+      {% if request.GET.type or request.GET.trainer or request.GET.date %}
+      <a href="{% url 'sessions' %}" class="btn btn-ghost btn-sm" style="align-self:flex-end">Clear</a>
+      {% endif %}
+    </form>
+
+    <!-- Session type quick filters -->
+    <div style="display:flex; gap:8px; margin-bottom:32px; flex-wrap:wrap">
+      <a href="{% url 'sessions' %}" class="btn {% if not request.GET.type %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">All Sessions</a>
+      <a href="?type=personal" class="btn {% if request.GET.type == 'personal' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm"><i class="bi bi-person"></i> Personal</a>
+      <a href="?type=group" class="btn {% if request.GET.type == 'group' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm"><i class="bi bi-people"></i> Group</a>
+      <a href="?type=online" class="btn {% if request.GET.type == 'online' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm"><i class="bi bi-camera-video"></i> Online</a>
+    </div>
+
+    {% if sessions %}
+    <div class="grid-3">
+      {% for session in sessions %}
+      <div class="card" data-aos>
+        <!-- Session type color band -->
+        <div style="height:8px; background:{% if session.session_type == 'personal' %}var(--primary){% elif session.session_type == 'group' %}var(--accent2){% else %}var(--accent){% endif %}; opacity:.6"></div>
+
+        <div class="card-body">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px">
+            <span class="card-tag {% if session.session_type == 'personal' %}{% elif session.session_type == 'online' %}cyan{% else %}{% endif %}" style="font-size:.68rem">
+              {% if session.session_type == 'personal' %}<i class="bi bi-person"></i>{% elif session.session_type == 'group' %}<i class="bi bi-people"></i>{% else %}<i class="bi bi-camera-video"></i>{% endif %}
+              {{ session.get_session_type_display }}
+            </span>
+            {% if not session.is_available %}
+              <span style="font-size:.72rem; color:var(--danger)"><i class="bi bi-x-circle-fill"></i> Full</span>
+            {% elif session.spots_remaining <= 3 %}
+              <span style="font-size:.72rem; color:var(--warning)"><i class="bi bi-exclamation-circle-fill"></i> {{ session.spots_remaining }} left</span>
+            {% else %}
+              <span style="font-size:.72rem; color:var(--success)"><i class="bi bi-check-circle-fill"></i> {{ session.spots_remaining }} spots</span>
+            {% endif %}
+          </div>
+
+          <h4 style="color:var(--text); margin-bottom:12px; font-size:1rem">{{ session.title }}</h4>
+
+          <!-- Trainer info -->
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; padding:10px; background:var(--dark); border-radius:var(--radius); border:1px solid var(--border)">
+            {% if session.trainer.profile_image %}
+              <img src="{{ session.trainer.profile_image.url }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0" />
+            {% else %}
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--black);flex-shrink:0">
+                {{ session.trainer.first_name.0 }}{{ session.trainer.last_name.0 }}
+              </div>
+            {% endif %}
+            <div style="min-width:0">
+              <div style="font-size:.85rem; color:var(--text); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ session.trainer.get_full_name }}</div>
+              {% if session.trainer.trainer_profile %}<div style="font-size:.72rem; color:var(--text-dim)">{{ session.trainer.trainer_profile.get_specialization_display }}</div>{% endif %}
+            </div>
+            {% if session.trainer.trainer_profile %}
+            <span style="margin-left:auto; font-size:.8rem; color:var(--warning); flex-shrink:0">★ {{ session.trainer.trainer_profile.rating|floatformat:1 }}</span>
+            {% endif %}
+          </div>
+
+          <!-- Date/time/location -->
+          <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:16px">
+            <div style="display:flex; align-items:center; gap:8px; font-size:.82rem; color:var(--text-dim)">
+              <i class="bi bi-calendar3" style="color:var(--primary); width:14px"></i>
+              {{ session.date|date:"l, N j, Y" }}
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:.82rem; color:var(--text-dim)">
+              <i class="bi bi-clock" style="color:var(--primary); width:14px"></i>
+              {{ session.start_time|time:"g:i A" }} – {{ session.end_time|time:"g:i A" }}
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:.82rem; color:var(--text-dim)">
+              <i class="bi bi-geo-alt" style="color:var(--primary); width:14px"></i>
+              {{ session.location }}
+            </div>
+          </div>
+
+          <!-- Price & CTA -->
+          <div style="display:flex; align-items:center; justify-content:space-between; padding-top:14px; border-top:1px solid var(--border)">
+            <div style="font-family:var(--font-display); font-size:1.6rem; color:var(--text)">
+              {% if session.price > 0 %}${{ session.price }}{% else %}<span style="color:var(--success); font-size:1rem; font-family:var(--font-body); font-weight:600">Included</span>{% endif %}
+            </div>
+            {% if user.is_authenticated %}
+              {% if session.id in user_bookings %}
+                <span class="btn btn-ghost btn-sm" style="pointer-events:none; opacity:.7; color:var(--success)"><i class="bi bi-check-circle-fill"></i> Booked</span>
+              {% elif session.is_available %}
+                <a href="{% url 'book_session' session.id %}" class="btn btn-primary btn-sm">Book Now</a>
+              {% else %}
+                <span class="btn btn-ghost btn-sm" style="pointer-events:none; opacity:.5">Session Full</span>
+              {% endif %}
+            {% else %}
+              <a href="{% url 'account_login' %}?next={% url 'book_session' session.id %}" class="btn btn-primary btn-sm">Login to Book</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:80px 20px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-xl)">
+      <i class="bi bi-calendar-x" style="font-size:3rem; color:var(--border-hi)"></i>
+      <h4 style="color:var(--text); margin-top:16px">No Sessions Available</h4>
+      <p style="margin-top:8px">Try adjusting your filters or check back soon.</p>
+      <a href="{% url 'sessions' %}" class="btn btn-ghost btn-sm" style="margin-top:20px">Clear All Filters</a>
+    </div>
+    {% endif %}
+
+    {% if is_paginated %}
+    <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:48px">
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="btn btn-ghost btn-sm">← Prev</a>{% endif %}
+      <span style="padding:8px 20px; color:var(--text-dim); font-size:.9rem; background:var(--card); border:1px solid var(--border); border-radius:var(--radius)">Page {{ page_obj.number }}</span>
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="btn btn-ghost btn-sm">Next →</a>{% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard — IronForge{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+
+  <!-- ── SIDEBAR ─────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div style="display:flex; align-items:center; gap:12px; padding:0 12px 24px">
+        {% if user.profile_image %}
+          <img src="{{ user.profile_image.url }}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--border-hi)" />
+        {% else %}
+          <div style="width:44px;height:44px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--black);font-size:.9rem">
+            {{ user.first_name.0 }}{{ user.last_name.0 }}
+          </div>
+        {% endif %}
+        <div>
+          <div style="font-weight:600; color:var(--text); font-size:.9rem">{{ user.get_full_name }}</div>
+          {% if user_membership %}
+            <span class="membership-badge {{ user_membership.plan.name }}">{{ user_membership.plan.display_name }}</span>
+          {% else %}
+            <span class="membership-badge expired">No Plan</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Main</div>
+      <a href="{% url 'dashboard' %}" class="sidebar-link active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="{% url 'profile' %}" class="sidebar-link"><i class="bi bi-person"></i> My Profile</a>
+      <a href="{% url 'my_bookings' %}" class="sidebar-link"><i class="bi bi-calendar-check"></i> My Bookings</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Training</div>
+      <a href="{% url 'my_workouts' %}" class="sidebar-link"><i class="bi bi-activity"></i> My Workouts</a>
+      <a href="{% url 'workouts' %}" class="sidebar-link"><i class="bi bi-collection"></i> Browse Programs</a>
+      <a href="{% url 'exercises' %}" class="sidebar-link"><i class="bi bi-trophy"></i> Exercise Library</a>
+      <a href="{% url 'sessions' %}" class="sidebar-link"><i class="bi bi-person-video2"></i> Book Sessions</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Nutrition</div>
+      <a href="{% url 'my_diet' %}" class="sidebar-link"><i class="bi bi-apple"></i> My Diet Plan</a>
+      <a href="{% url 'diet_plans' %}" class="sidebar-link"><i class="bi bi-egg-fried"></i> Browse Plans</a>
+      <a href="{% url 'food_library' %}" class="sidebar-link"><i class="bi bi-book"></i> Food Library</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Account</div>
+      <a href="{% url 'my_membership' %}" class="sidebar-link"><i class="bi bi-credit-card"></i> Membership</a>
+      <a href="{% url 'payment_history' %}" class="sidebar-link"><i class="bi bi-receipt"></i> Payments</a>
+      <a href="{% url 'profile_edit' %}" class="sidebar-link"><i class="bi bi-gear"></i> Settings</a>
+      {% if user.is_staff %}
+      <a href="{% url 'admin_dashboard' %}" class="sidebar-link" style="color:var(--primary)"><i class="bi bi-bar-chart"></i> Admin Panel</a>
+      {% endif %}
+    </div>
+  </aside>
+
+  <!-- ── MAIN ─────────────────────────────────────────────────── -->
+  <div class="dashboard-main">
+    <h1 class="page-title">Good day, {{ user.first_name }}. 💪</h1>
+    <p class="page-subtitle">Here's your fitness summary for today.</p>
+
+    <!-- Stats Row -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="bi bi-calendar-check"></i></div>
+        <div class="stat-value">{{ stats.total_sessions }}</div>
+        <div class="stat-label">Total Sessions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon accent"><i class="bi bi-fire"></i></div>
+        <div class="stat-value">{{ stats.workouts_this_month }}</div>
+        <div class="stat-label">Workouts This Month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon cyan"><i class="bi bi-clock"></i></div>
+        <div class="stat-value">
+          {% if active_membership %}{{ active_membership.days_remaining }}{% else %}—{% endif %}
+        </div>
+        <div class="stat-label">Days Left in Plan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="bi bi-graph-up-arrow"></i></div>
+        <div class="stat-value">{% if user.bmi %}{{ user.bmi }}{% else %}—{% endif %}</div>
+        <div class="stat-label">Current BMI</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- Membership Card -->
+      <div class="card">
+        <div class="card-body">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px">
+            <h4 style="color:var(--text)"><i class="bi bi-credit-card" style="color:var(--primary)"></i> Membership</h4>
+            <a href="{% url 'my_membership' %}" class="btn btn-ghost btn-sm">Manage</a>
+          </div>
+          {% if active_membership %}
+            <span class="membership-badge {{ active_membership.plan.name }}">{{ active_membership.plan.display_name }}</span>
+            <div style="margin-top:16px; font-size:.88rem; color:var(--text-dim)">
+              Valid until <strong style="color:var(--text)">{{ active_membership.end_date|date:"N j, Y" }}</strong>
+            </div>
+            <div style="margin-top:12px">
+              <div style="display:flex; justify-content:space-between; font-size:.8rem; color:var(--text-dim); margin-bottom:6px">
+                <span>Time remaining</span>
+                <span>{{ active_membership.days_remaining }} days</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: {% widthratio active_membership.days_remaining active_membership.plan.duration_days 100 %}%"></div>
+              </div>
+            </div>
+          {% else %}
+            <p style="font-size:.9rem; margin-bottom:16px">You don't have an active membership.</p>
+            <a href="{% url 'membership_plans' %}" class="btn btn-primary btn-sm">Get a Plan</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Upcoming Bookings -->
+      <div class="card">
+        <div class="card-body">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px">
+            <h4 style="color:var(--text)"><i class="bi bi-calendar-event" style="color:var(--primary)"></i> Upcoming Sessions</h4>
+            <a href="{% url 'sessions' %}" class="btn btn-ghost btn-sm">Book More</a>
+          </div>
+          {% for booking in upcoming_bookings %}
+          <div style="display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--border)">
+            <div style="width:44px;height:44px;border-radius:var(--radius);background:rgba(232,255,60,0.1);display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0">
+              <i class="bi bi-person-video2"></i>
+            </div>
+            <div style="flex:1; min-width:0">
+              <div style="font-size:.9rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ booking.session.title }}</div>
+              <div style="font-size:.8rem; color:var(--text-dim)">{{ booking.session.date|date:"D, N j" }} at {{ booking.session.start_time|time:"g:i A" }}</div>
+            </div>
+            <a href="{% url 'cancel_booking' booking.id %}" class="btn btn-ghost btn-sm" data-confirm="Cancel this booking?">Cancel</a>
+          </div>
+          {% empty %}
+          <p style="font-size:.9rem; padding:20px 0">No upcoming sessions. <a href="{% url 'sessions' %}" style="color:var(--primary)">Book one now!</a></p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Assigned Workout -->
+      <div class="card">
+        <div class="card-body">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px">
+            <h4 style="color:var(--text)"><i class="bi bi-activity" style="color:var(--primary)"></i> My Workout</h4>
+            <a href="{% url 'my_workouts' %}" class="btn btn-ghost btn-sm">View All</a>
+          </div>
+          {% if assigned_workout %}
+          <span class="card-tag">{{ assigned_workout.get_level_display }}</span>
+          <h4 style="color:var(--text); margin:12px 0 8px">{{ assigned_workout.title }}</h4>
+          <p style="font-size:.88rem; margin-bottom:16px">{{ assigned_workout.description|truncatechars:120 }}</p>
+          <div style="display:flex; gap:16px; font-size:.82rem; color:var(--text-dim)">
+            <span><i class="bi bi-calendar3"></i> {{ assigned_workout.duration_weeks }} weeks</span>
+            <span><i class="bi bi-arrow-repeat"></i> {{ assigned_workout.days_per_week }}x/week</span>
+          </div>
+          <a href="{% url 'workout_detail' assigned_workout.pk %}" class="btn btn-primary btn-sm" style="margin-top:16px">
+            View Program <i class="bi bi-arrow-right"></i>
+          </a>
+          {% else %}
+          <p style="font-size:.9rem; margin-bottom:16px">No workout assigned yet.</p>
+          <a href="{% url 'workouts' %}" class="btn btn-ghost btn-sm">Browse Programs</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Diet Plan -->
+      <div class="card">
+        <div class="card-body">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px">
+            <h4 style="color:var(--text)"><i class="bi bi-apple" style="color:var(--primary)"></i> My Nutrition</h4>
+            <a href="{% url 'my_diet' %}" class="btn btn-ghost btn-sm">View All</a>
+          </div>
+          {% if assigned_diet %}
+          <span class="card-tag">{{ assigned_diet.get_goal_display }}</span>
+          <h4 style="color:var(--text); margin:12px 0 8px">{{ assigned_diet.title }}</h4>
+          <p style="font-size:.88rem; margin-bottom:16px">{{ assigned_diet.description|truncatechars:120 }}</p>
+          <div style="display:flex; gap:16px; font-size:.82rem; color:var(--text-dim)">
+            <span><i class="bi bi-fire"></i> {{ assigned_diet.daily_calories }} cal/day</span>
+            <span><i class="bi bi-calendar3"></i> {{ assigned_diet.duration_weeks }} weeks</span>
+          </div>
+          <a href="{% url 'diet_detail' assigned_diet.pk %}" class="btn btn-primary btn-sm" style="margin-top:16px">
+            View Plan <i class="bi bi-arrow-right"></i>
+          </a>
+          {% else %}
+          <p style="font-size:.9rem; margin-bottom:16px">No diet plan assigned yet.</p>
+          <a href="{% url 'diet_plans' %}" class="btn btn-ghost btn-sm">Browse Nutrition Plans</a>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Progress Chart -->
+    {% if recent_progress %}
+    <div class="card" style="margin-top:24px">
+      <div class="card-body">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px">
+          <h4 style="color:var(--text)"><i class="bi bi-graph-up" style="color:var(--primary)"></i> Weight Progress</h4>
+          <a href="{% url 'add_progress' %}" class="btn btn-ghost btn-sm"><i class="bi bi-plus"></i> Log Entry</a>
+        </div>
+        <canvas id="progressChart" height="80"></canvas>
+      </div>
+    </div>
+    {% endif %}
+
+  </div><!-- /dashboard-main -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if recent_progress %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+fetch("{% url 'progress_data' %}")
+  .then(r => r.json())
+  .then(data => {
+    const entries = data.entries.filter(e => e.weight_kg);
+    if (!entries.length) return;
+    new Chart(document.getElementById('progressChart'), {
+      type: 'line',
+      data: {
+        labels: entries.map(e => e.date),
+        datasets: [{
+          label: 'Weight (kg)',
+          data: entries.map(e => e.weight_kg),
+          borderColor: '#e8ff3c',
+          backgroundColor: 'rgba(232,255,60,0.06)',
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#e8ff3c',
+          pointRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#999' }, grid: { color: '#252525' } },
+          y: { ticks: { color: '#999' }, grid: { color: '#252525' } }
+        }
+      }
+    });
+  });
+</script>
+{% endif %}
+{% endblock %}

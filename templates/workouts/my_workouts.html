@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}My Workouts — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container" style="max-width:1000px">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:40px">
+      <div>
+        <h1 class="page-title">My Workouts</h1>
+        <p class="page-subtitle">Your assigned programs and recent activity.</p>
+      </div>
+      <a href="{% url 'workouts' %}" class="btn btn-ghost"><i class="bi bi-collection"></i> Browse All Programs</a>
+    </div>
+
+    <!-- Assigned Programs -->
+    <h4 style="color:var(--text-dim); font-size:.8rem; text-transform:uppercase; letter-spacing:.1em; margin-bottom:16px">Assigned Programs</h4>
+
+    {% if assigned_programs %}
+    <div class="grid-2" style="margin-bottom:48px">
+      {% for program in assigned_programs %}
+      <div class="card" data-aos>
+        {% if program.thumbnail %}
+          <img src="{{ program.thumbnail.url }}" alt="{{ program.title }}" class="card-img" />
+        {% else %}
+          <div class="card-img flex-center" style="background:linear-gradient(135deg,#161616,#222); height:160px">
+            <i class="bi bi-activity" style="font-size:2.5rem; color:var(--primary); opacity:.4"></i>
+          </div>
+        {% endif %}
+        <div class="card-body">
+          <div style="display:flex; gap:6px; margin-bottom:10px">
+            <span class="card-tag">{{ program.get_level_display }}</span>
+            <span class="card-tag accent">{{ program.get_goal_display }}</span>
+          </div>
+          <h4 style="color:var(--text); margin-bottom:8px">{{ program.title }}</h4>
+          <p style="font-size:.88rem; margin-bottom:16px">{{ program.description|truncatechars:90 }}</p>
+          <div style="display:flex; gap:16px; font-size:.82rem; color:var(--text-dim); margin-bottom:16px">
+            <span><i class="bi bi-calendar3"></i> {{ program.duration_weeks }} weeks</span>
+            <span><i class="bi bi-arrow-repeat"></i> {{ program.days_per_week }}x/week</span>
+          </div>
+          <a href="{% url 'workout_detail' program.pk %}" class="btn btn-primary btn-sm">
+            View Program <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:48px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); margin-bottom:48px">
+      <i class="bi bi-activity" style="font-size:2.5rem; color:var(--border-hi)"></i>
+      <h4 style="color:var(--text); margin:12px 0 8px">No programs assigned yet</h4>
+      <p style="margin-bottom:20px">Ask your trainer to assign a program, or browse our library.</p>
+      <a href="{% url 'workouts' %}" class="btn btn-primary btn-sm">Browse Programs</a>
+    </div>
+    {% endif %}
+
+    <!-- Recent Logs -->
+    <h4 style="color:var(--text-dim); font-size:.8rem; text-transform:uppercase; letter-spacing:.1em; margin-bottom:16px">Recent Activity</h4>
+
+    {% if recent_logs %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Program</th>
+            <th>Day</th>
+            <th>Duration</th>
+            <th>Calories</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in recent_logs %}
+          <tr>
+            <td style="color:var(--text)">{{ log.date|date:"N j, Y" }}</td>
+            <td>{{ log.program.title|default:"—" }}</td>
+            <td>{{ log.day.title|default:"—" }}</td>
+            <td><i class="bi bi-clock" style="color:var(--primary)"></i> {{ log.duration_minutes }} min</td>
+            <td><i class="bi bi-fire" style="color:var(--accent)"></i> {{ log.calories_burned }}</td>
+            <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ log.notes|default:"—" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:40px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg)">
+      <i class="bi bi-journal-x" style="font-size:2rem; color:var(--border-hi)"></i>
+      <p style="margin-top:12px">No workout logs yet. Complete a workout session to see your activity here.</p>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

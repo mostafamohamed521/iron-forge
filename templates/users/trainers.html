@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Our Trainers — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container">
+
+    <div class="section-header">
+      <h2>ELITE <em style="color:var(--primary)">TRAINERS</em></h2>
+      <p>World-class coaches dedicated to your transformation.</p>
+    </div>
+
+    <!-- Filter -->
+    <form method="get" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:40px">
+      <select name="specialization" class="form-control" style="width:auto" onchange="this.form.submit()">
+        <option value="">All Specializations</option>
+        {% for val, label in specializations %}
+        <option value="{{ val }}" {% if request.GET.specialization == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      {% if request.GET.specialization %}
+      <a href="{% url 'trainers' %}" class="btn btn-ghost btn-sm" style="align-self:center">Clear</a>
+      {% endif %}
+    </form>
+
+    <div class="grid-3">
+      {% for trainer in trainers %}
+      <div class="card trainer-card" data-aos>
+        {% if trainer.profile_image %}
+          <img src="{{ trainer.profile_image.url }}" alt="{{ trainer.get_full_name }}" class="card-img" style="height:280px" />
+        {% else %}
+          <div class="card-img flex-center" style="height:280px; background:linear-gradient(135deg,#161616,#1e1e1e)">
+            <div style="font-family:var(--font-display); font-size:4rem; color:var(--border-hi)">
+              {{ trainer.first_name.0 }}{{ trainer.last_name.0 }}
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="card-body">
+          {% if trainer.trainer_profile %}
+          <div class="trainer-speciality">{{ trainer.trainer_profile.get_specialization_display }}</div>
+          {% endif %}
+
+          <h4 style="color:var(--text); margin:8px 0 4px">{{ trainer.get_full_name }}</h4>
+
+          {% if trainer.trainer_profile %}
+          <div style="display:flex; align-items:center; gap:16px; margin-bottom:12px">
+            <div class="trainer-rating">
+              <i class="bi bi-star-fill"></i>
+              {{ trainer.trainer_profile.rating|floatformat:1 }}
+            </div>
+            <span style="font-size:.82rem; color:var(--text-dim)">
+              {{ trainer.trainer_profile.years_experience }} yrs exp
+            </span>
+            <span style="font-size:.82rem; color:var(--text-dim)">
+              {{ trainer.trainer_profile.total_sessions }} sessions
+            </span>
+          </div>
+
+          {% if trainer.trainer_profile.certifications %}
+          <p style="font-size:.82rem; margin-bottom:12px; color:var(--text-dim)">
+            {{ trainer.trainer_profile.certifications|truncatechars:80 }}
+          </p>
+          {% endif %}
+
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-top:16px">
+            <div style="font-family:var(--font-display); font-size:1.5rem; color:var(--text)">
+              {% if trainer.trainer_profile.hourly_rate > 0 %}
+                ${{ trainer.trainer_profile.hourly_rate }}<span style="font-size:.9rem; font-family:var(--font-body); color:var(--text-dim)">/hr</span>
+              {% else %}
+                <span style="font-size:1rem; color:var(--success)">Included</span>
+              {% endif %}
+            </div>
+            <a href="{% url 'sessions' %}?trainer={{ trainer.id }}" class="btn btn-primary btn-sm">
+              Book Session
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div style="grid-column:1/-1; text-align:center; padding:80px 20px">
+        <i class="bi bi-people" style="font-size:3rem; color:var(--border-hi)"></i>
+        <h4 style="color:var(--text); margin-top:16px">No trainers found</h4>
+        <p>Try a different specialization filter.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div style="display:flex; justify-content:center; gap:8px; margin-top:48px">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-ghost btn-sm">← Prev</a>
+      {% endif %}
+      <span style="padding:8px 16px; color:var(--text-dim); font-size:.9rem">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-ghost btn-sm">Next →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Subscriptions — Admin — IronForge{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <h1>Subscriptions</h1>
+    <p style="color:var(--text-dim); margin:0">{{ total_active }} active subscriptions</p>
+  </div>
+</div>
+<div style="display:flex; gap:8px; margin-bottom:24px">
+  <a href="{% url 'admin_memberships' %}" class="btn {% if not status_filter %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">All</a>
+  <a href="?status=active" class="btn {% if status_filter == 'active' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">Active</a>
+  <a href="?status=expired" class="btn {% if status_filter == 'expired' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">Expired</a>
+</div>
+<div class="data-table-wrap">
+  <table>
+    <thead><tr><th>Member</th><th>Plan</th><th>Start</th><th>End</th><th>Days Left</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for m in page_obj %}
+      <tr>
+        <td><a href="{% url 'admin_user_detail' m.user.id %}" style="color:var(--primary); font-size:.9rem">{{ m.user.get_full_name|default:m.user.email }}</a></td>
+        <td><span class="membership-badge {{ m.plan.name }}" style="font-size:.7rem">{{ m.plan.display_name }}</span></td>
+        <td style="font-size:.82rem">{{ m.start_date|date:"N j, Y" }}</td>
+        <td style="font-size:.82rem">{{ m.end_date|date:"N j, Y" }}</td>
+        <td style="font-weight:600; color:{% if m.days_remaining < 7 %}var(--danger){% elif m.days_remaining < 14 %}var(--warning){% else %}var(--success){% endif %}">
+          {{ m.days_remaining }}d
+        </td>
+        <td><span style="font-size:.72rem; padding:3px 8px; border-radius:4px; background:{% if m.is_active %}rgba(34,197,94,.1){% else %}rgba(239,68,68,.1){% endif %}; color:{% if m.is_active %}var(--success){% else %}var(--danger){% endif %}">{{ m.get_status_display|upper }}</span></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center; padding:48px; color:var(--muted)">No subscriptions found</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if page_obj.has_other_pages %}
+  <div style="display:flex; justify-content:center; gap:8px; padding:20px; border-top:1px solid var(--border)">
+    {% if page_obj.has_previous %}<a href="?status={{ status_filter }}&page={{ page_obj.previous_page_number }}" class="btn btn-ghost btn-sm">← Prev</a>{% endif %}
+    <span style="padding:8px 16px; color:var(--text-dim); font-size:.9rem">Page {{ page_obj.number }}</span>
+    {% if page_obj.has_next %}<a href="?status={{ status_filter }}&page={{ page_obj.next_page_number }}" class="btn btn-ghost btn-sm">Next →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

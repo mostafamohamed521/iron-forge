@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Admin Dashboard — IronForge{% endblock %}
+
+{% block content %}
+<div style="min-height:calc(100vh - var(--nav-h)); padding-top:calc(var(--nav-h) + 40px); padding-bottom:80px">
+  <div class="container" style="max-width:1200px">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:40px">
+      <div>
+        <h1 class="page-title">Admin Panel</h1>
+        <p class="page-subtitle">Platform analytics and management.</p>
+      </div>
+      <a href="/admin/" class="btn btn-ghost"><i class="bi bi-gear"></i> Django Admin</a>
+    </div>
+
+    <!-- KPI Stats -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="bi bi-people"></i></div>
+        <div class="stat-value">{{ total_users }}</div>
+        <div class="stat-label">Total Members</div>
+        <div class="stat-change up"><i class="bi bi-arrow-up"></i> {{ new_users_this_month }} this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon accent"><i class="bi bi-person-check"></i></div>
+        <div class="stat-value">{{ active_members }}</div>
+        <div class="stat-label">Active Subscriptions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon cyan"><i class="bi bi-currency-dollar"></i></div>
+        <div class="stat-value">${{ monthly_revenue|floatformat:0 }}</div>
+        <div class="stat-label">Revenue This Month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="bi bi-person-video2"></i></div>
+        <div class="stat-value">{{ trainers.count }}</div>
+        <div class="stat-label">Active Trainers</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:32px; margin-top:0">
+
+      <!-- Recent Users -->
+      <div class="card">
+        <div class="card-body">
+          <h4 style="color:var(--text); margin-bottom:20px"><i class="bi bi-person-plus" style="color:var(--primary)"></i> Recent Signups</h4>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Joined</th>
+                  <th>Goal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for u in recent_users %}
+                <tr>
+                  <td style="color:var(--text)">{{ u.get_full_name|default:"—" }}</td>
+                  <td>{{ u.email }}</td>
+                  <td>{{ u.created_at|date:"N j" }}</td>
+                  <td><span class="card-tag" style="font-size:.7rem">{{ u.get_fitness_goal_display }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="text-align:center; padding:32px; color:var(--muted)">No users yet</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Payments -->
+      <div class="card">
+        <div class="card-body">
+          <h4 style="color:var(--text); margin-bottom:20px"><i class="bi bi-receipt" style="color:var(--primary)"></i> Recent Payments</h4>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for payment in recent_payments %}
+                <tr>
+                  <td style="color:var(--text)">{{ payment.user.email }}</td>
+                  <td style="color:var(--primary); font-weight:600">${{ payment.amount }}</td>
+                  <td>
+                    <span class="card-tag {% if payment.status == 'succeeded' %}{% else %}accent{% endif %}" style="font-size:.7rem">
+                      {{ payment.status|upper }}
+                    </span>
+                  </td>
+                  <td>{{ payment.created_at|date:"N j" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="text-align:center; padding:32px; color:var(--muted)">No payments yet</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="card" style="margin-top:32px">
+      <div class="card-body">
+        <h4 style="color:var(--text); margin-bottom:20px">Quick Actions</h4>
+        <div style="display:flex; flex-wrap:wrap; gap:12px">
+          <a href="/admin/users/customuser/" class="btn btn-ghost btn-sm"><i class="bi bi-people"></i> Manage Users</a>
+          <a href="/admin/memberships/membershipplan/" class="btn btn-ghost btn-sm"><i class="bi bi-credit-card"></i> Manage Plans</a>
+          <a href="/admin/workouts/workoutprogram/" class="btn btn-ghost btn-sm"><i class="bi bi-activity"></i> Manage Workouts</a>
+          <a href="/admin/diet/dietplan/" class="btn btn-ghost btn-sm"><i class="bi bi-apple"></i> Manage Diet Plans</a>
+          <a href="/admin/bookings/trainingsession/" class="btn btn-ghost btn-sm"><i class="bi bi-calendar-plus"></i> Add Sessions</a>
+          <a href="/admin/payments/payment/" class="btn btn-ghost btn-sm"><i class="bi bi-receipt"></i> View Payments</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

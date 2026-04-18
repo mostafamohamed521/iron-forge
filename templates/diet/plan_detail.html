@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}{{ plan.title }} — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container" style="max-width:960px">
+
+    <!-- Header -->
+    <div style="margin-bottom:40px">
+      <a href="{% url 'diet_plans' %}" style="color:var(--text-dim); font-size:.88rem"><i class="bi bi-arrow-left"></i> Back to Plans</a>
+      <div style="display:flex; gap:8px; margin:16px 0 12px">
+        <span class="card-tag {% if plan.goal == 'weight_loss' %}accent{% elif plan.goal == 'muscle_gain' %}cyan{% endif %}">
+          {{ plan.get_goal_display }}
+        </span>
+        {% if is_assigned %}<span class="card-tag">Assigned to You</span>{% endif %}
+      </div>
+      <h1 style="font-size:clamp(2rem,5vw,3rem); margin-bottom:12px">{{ plan.title|upper }}</h1>
+      <p style="font-size:1rem; max-width:600px">{{ plan.description }}</p>
+      <div style="display:flex; gap:24px; margin-top:20px; font-size:.9rem; color:var(--text-dim)">
+        <span><i class="bi bi-fire" style="color:var(--accent)"></i> {{ plan.daily_calories }} cal/day</span>
+        <span><i class="bi bi-calendar3" style="color:var(--primary)"></i> {{ plan.duration_weeks }} weeks</span>
+        {% if plan.created_by %}<span><i class="bi bi-person" style="color:var(--primary)"></i> by {{ plan.created_by.get_full_name }}</span>{% endif %}
+      </div>
+    </div>
+
+    <!-- Days -->
+    {% for day in days %}
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-body">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px">
+          <div style="width:48px;height:48px;border-radius:var(--radius);background:rgba(232,255,60,0.1);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.2rem;color:var(--primary)">
+            {{ day.day_number }}
+          </div>
+          <div style="font-weight:600; color:var(--text)">{{ day.title|default:"Day "|add:day.day_number }}</div>
+        </div>
+
+        {% if day.meals.all %}
+        <div style="display:flex; flex-direction:column; gap:12px">
+          {% for meal in day.meals.all %}
+          <div style="padding:16px; background:var(--dark); border-radius:var(--radius); border:1px solid var(--border)">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px">
+              <div>
+                <span class="card-tag" style="font-size:.7rem; margin-right:8px">{{ meal.get_meal_type_display }}</span>
+                <strong style="color:var(--text); font-size:.95rem">{{ meal.name }}</strong>
+              </div>
+              <div style="font-size:.85rem; color:var(--text-dim)">
+                <i class="bi bi-fire" style="color:var(--accent)"></i> ~{{ meal.total_calories }} kcal
+              </div>
+            </div>
+            {% if meal.ingredients.all %}
+            <div style="display:flex; flex-wrap:wrap; gap:6px">
+              {% for ing in meal.ingredients.all %}
+              <span style="padding:3px 10px; background:var(--border); border-radius:100px; font-size:.78rem; color:var(--text-dim)">
+                {{ ing.food_item.name }} {{ ing.amount_g }}g
+              </span>
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% if meal.instructions %}
+            <p style="margin-top:10px; font-size:.85rem; color:var(--text-dim)">{{ meal.instructions|truncatechars:150 }}</p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--text-dim); font-size:.9rem">No meals assigned for this day yet.</p>
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <div style="text-align:center; padding:60px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg)">
+      <i class="bi bi-calendar-x" style="font-size:2.5rem; color:var(--border-hi)"></i>
+      <p style="margin-top:12px">No days configured for this plan yet.</p>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+{% endblock %}

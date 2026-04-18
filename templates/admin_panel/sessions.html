@@ -1,0 +1,133 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Sessions — Admin — IronForge{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <h1>Training Sessions</h1>
+    <p style="color:var(--text-dim); margin:0">Manage bookable training sessions</p>
+  </div>
+  <button class="btn btn-primary" onclick="document.getElementById('createModal').style.display='flex'">
+    <i class="bi bi-plus-lg"></i> Create Session
+  </button>
+</div>
+
+<!-- Filter tabs -->
+<div style="display:flex; gap:8px; margin-bottom:24px">
+  <a href="?period=upcoming" class="btn {% if period == 'upcoming' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">Upcoming</a>
+  <a href="?period=past" class="btn {% if period == 'past' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">Past</a>
+  <a href="?period=all" class="btn {% if period == 'all' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">All</a>
+</div>
+
+<div class="data-table-wrap">
+  <table>
+    <thead>
+      <tr><th>Session</th><th>Trainer</th><th>Date & Time</th><th>Type</th><th>Spots</th><th>Status</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      {% for s in page_obj %}
+      <tr>
+        <td style="color:var(--text); font-weight:500">{{ s.title }}</td>
+        <td style="font-size:.85rem">{{ s.trainer.get_full_name }}</td>
+        <td style="font-size:.82rem">{{ s.date|date:"N j, Y" }} {{ s.start_time|time:"g:i A" }}</td>
+        <td><span class="card-tag" style="font-size:.7rem">{{ s.get_session_type_display }}</span></td>
+        <td style="font-size:.85rem">{{ s.current_participants }}/{{ s.max_participants }}</td>
+        <td>
+          <span style="font-size:.72rem; padding:3px 8px; border-radius:4px;
+            {% if s.status == 'open' %}background:rgba(34,197,94,.1); color:var(--success)
+            {% elif s.status == 'full' %}background:rgba(245,158,11,.1); color:var(--warning)
+            {% elif s.status == 'cancelled' %}background:rgba(239,68,68,.1); color:var(--danger)
+            {% else %}background:rgba(100,100,100,.1); color:var(--text-dim){% endif %}">
+            {{ s.get_status_display|upper }}
+          </span>
+        </td>
+        <td>
+          {% if s.status != 'cancelled' %}
+          <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="cancel" />
+            <input type="hidden" name="session_id" value="{{ s.id }}" />
+            <button type="submit" class="btn btn-ghost btn-sm" data-confirm="Cancel session '{{ s.title }}'?">Cancel</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center; padding:48px; color:var(--muted)">No sessions found</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if page_obj.has_other_pages %}
+  <div style="display:flex; justify-content:center; gap:8px; padding:20px; border-top:1px solid var(--border)">
+    {% if page_obj.has_previous %}<a href="?period={{ period }}&page={{ page_obj.previous_page_number }}" class="btn btn-ghost btn-sm">← Prev</a>{% endif %}
+    <span style="padding:8px 16px; color:var(--text-dim); font-size:.9rem">Page {{ page_obj.number }}</span>
+    {% if page_obj.has_next %}<a href="?period={{ period }}&page={{ page_obj.next_page_number }}" class="btn btn-ghost btn-sm">Next →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Create Session Modal -->
+<div id="createModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:9999; align-items:center; justify-content:center; padding:20px">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:var(--radius-xl); padding:36px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <h3 style="color:var(--text)">Create New Session</h3>
+      <button onclick="document.getElementById('createModal').style.display='none'" style="color:var(--text-dim); font-size:1.2rem; background:none; border:none; cursor:pointer">✕</button>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create" />
+      <div class="grid-2">
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Session Title</label>
+          <input type="text" name="title" class="form-control" placeholder="e.g. Morning HIIT" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Trainer</label>
+          <select name="trainer_id" class="form-control" required>
+            <option value="">Select trainer...</option>
+            {% for t in trainers %}<option value="{{ t.id }}">{{ t.get_full_name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Session Type</label>
+          <select name="session_type" class="form-control">
+            {% for val, label in session_types %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" name="date" class="form-control" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Start Time</label>
+          <input type="time" name="start_time" class="form-control" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">End Time</label>
+          <input type="time" name="end_time" class="form-control" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Max Participants</label>
+          <input type="number" name="max_participants" class="form-control" value="1" min="1" max="50" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price ($)</label>
+          <input type="number" name="price" class="form-control" value="0" min="0" step="0.01" />
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Location</label>
+          <input type="text" name="location" class="form-control" placeholder="Main Floor" />
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Notes (optional)</label>
+          <textarea name="notes" class="form-control" rows="2"></textarea>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:8px">
+        <button type="submit" class="btn btn-primary" style="flex:1">Create Session</button>
+        <button type="button" onclick="document.getElementById('createModal').style.display='none'" class="btn btn-ghost">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

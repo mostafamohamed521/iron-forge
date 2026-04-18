@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}My Nutrition — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container" style="max-width:1000px">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:40px">
+      <div>
+        <h1 class="page-title">My Nutrition</h1>
+        <p class="page-subtitle">Your assigned diet plans and today's food log.</p>
+      </div>
+      <a href="{% url 'diet_plans' %}" class="btn btn-ghost"><i class="bi bi-collection"></i> Browse Plans</a>
+    </div>
+
+    <!-- Today's summary -->
+    <div class="card" style="margin-bottom:32px; border-color:rgba(232,255,60,0.2)">
+      <div class="card-body">
+        <h4 style="color:var(--text); margin-bottom:20px">
+          <i class="bi bi-sun" style="color:var(--primary)"></i> Today's Calories
+        </h4>
+        <div style="display:flex; align-items:center; gap:24px; flex-wrap:wrap">
+          <div style="text-align:center">
+            <div style="font-family:var(--font-display); font-size:3.5rem; color:var(--primary); line-height:1">{{ total_calories|floatformat:0 }}</div>
+            <div style="font-size:.82rem; color:var(--text-dim); margin-top:4px">kcal consumed</div>
+          </div>
+          {% if assigned_plans %}
+          <div style="flex:1; max-width:300px">
+            <div style="display:flex; justify-content:space-between; font-size:.8rem; color:var(--text-dim); margin-bottom:6px">
+              <span>Daily Target</span>
+              <span>{{ assigned_plans.0.daily_calories }} kcal</span>
+            </div>
+            <div class="progress-bar" style="height:10px">
+              <div class="progress-fill" style="width:{% widthratio total_calories assigned_plans.0.daily_calories 100 %}%; max-width:100%"></div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if today_logs %}
+        <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--border)">
+          <h4 style="color:var(--text-dim); font-size:.8rem; text-transform:uppercase; letter-spacing:.1em; margin-bottom:14px">Today's Log</h4>
+          <div style="display:flex; flex-direction:column; gap:8px">
+            {% for log in today_logs %}
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--dark); border-radius:var(--radius); border:1px solid var(--border)">
+              <div style="display:flex; align-items:center; gap:12px">
+                <span class="card-tag" style="font-size:.7rem">{{ log.get_meal_type_display }}</span>
+                <span style="color:var(--text); font-size:.9rem">{{ log.food_item.name }}</span>
+                <span style="color:var(--text-dim); font-size:.82rem">{{ log.amount_g }}g</span>
+              </div>
+              <span style="color:var(--primary); font-size:.88rem; font-weight:600">{{ log.calories }} kcal</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% else %}
+        <p style="margin-top:20px; font-size:.9rem; color:var(--text-dim)">
+          No food logged today. <a href="{% url 'food_library' %}" style="color:var(--primary)">Browse the food library</a> to start logging.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Assigned Plans -->
+    <h4 style="color:var(--text-dim); font-size:.8rem; text-transform:uppercase; letter-spacing:.1em; margin-bottom:16px">Assigned Plans</h4>
+
+    {% if assigned_plans %}
+    <div class="grid-2">
+      {% for plan in assigned_plans %}
+      <div class="card" data-aos>
+        <div class="card-body">
+          <span class="card-tag {% if plan.goal == 'weight_loss' %}accent{% elif plan.goal == 'muscle_gain' %}cyan{% endif %}" style="margin-bottom:12px; display:inline-block">
+            {{ plan.get_goal_display }}
+          </span>
+          <h4 style="color:var(--text); margin-bottom:8px">{{ plan.title }}</h4>
+          <p style="font-size:.88rem; margin-bottom:16px">{{ plan.description|truncatechars:90 }}</p>
+          <div style="display:flex; gap:16px; font-size:.82rem; color:var(--text-dim); margin-bottom:16px">
+            <span><i class="bi bi-fire" style="color:var(--accent)"></i> {{ plan.daily_calories }} cal/day</span>
+            <span><i class="bi bi-calendar3" style="color:var(--primary)"></i> {{ plan.duration_weeks }} weeks</span>
+          </div>
+          <a href="{% url 'diet_detail' plan.pk %}" class="btn btn-primary btn-sm">
+            View Full Plan <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:48px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg)">
+      <i class="bi bi-apple" style="font-size:2.5rem; color:var(--border-hi)"></i>
+      <h4 style="color:var(--text); margin:12px 0 8px">No diet plan assigned</h4>
+      <p style="margin-bottom:20px">Browse our nutrition plans and get started.</p>
+      <a href="{% url 'diet_plans' %}" class="btn btn-primary btn-sm">Browse Plans</a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

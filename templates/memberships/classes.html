@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Group Classes — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container">
+
+    <div class="section-header">
+      <h2>GROUP <em style="color:var(--primary)">CLASSES</em></h2>
+      <p>High-energy group sessions led by certified instructors.</p>
+    </div>
+
+    <!-- Category filter -->
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:40px">
+      <a href="{% url 'gym_classes' %}" class="btn {% if not request.GET.category %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">All</a>
+      {% for val, label in categories %}
+      <a href="?category={{ val }}" class="btn {% if request.GET.category == val %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">{{ label }}</a>
+      {% endfor %}
+    </div>
+
+    <div class="grid-3">
+      {% for cls in classes %}
+      <div class="card" data-aos>
+        {% if cls.thumbnail %}
+          <img src="{{ cls.thumbnail.url }}" alt="{{ cls.name }}" class="card-img" />
+        {% else %}
+          <div class="card-img flex-center" style="height:180px; background:linear-gradient(135deg,#161616,#1e1e1e)">
+            <i class="bi bi-people-fill" style="font-size:2.5rem; color:var(--border-hi)"></i>
+          </div>
+        {% endif %}
+        <div class="card-body">
+          <span class="card-tag" style="margin-bottom:12px; display:inline-block">{{ cls.get_category_display }}</span>
+          <h4 style="color:var(--text); margin-bottom:8px">{{ cls.name }}</h4>
+          <p style="font-size:.88rem; margin-bottom:16px">{{ cls.description|truncatechars:90 }}</p>
+
+          <div style="display:flex; gap:16px; font-size:.82rem; color:var(--text-dim); margin-bottom:16px">
+            <span><i class="bi bi-clock" style="color:var(--primary)"></i> {{ cls.duration_minutes }} min</span>
+            <span><i class="bi bi-people" style="color:var(--primary)"></i> Max {{ cls.max_capacity }}</span>
+          </div>
+
+          {% if cls.trainer %}
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px">
+            {% if cls.trainer.profile_image %}
+              <img src="{{ cls.trainer.profile_image.url }}" style="width:28px;height:28px;border-radius:50%;object-fit:cover" />
+            {% else %}
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--text-dim)">
+                {{ cls.trainer.first_name.0 }}
+              </div>
+            {% endif %}
+            <span style="font-size:.85rem; color:var(--text-dim)">{{ cls.trainer.get_full_name }}</span>
+          </div>
+          {% endif %}
+
+          <a href="{% url 'sessions' %}?type=group" class="btn btn-ghost btn-sm btn-full">Book a Session</a>
+        </div>
+      </div>
+      {% empty %}
+      <div style="grid-column:1/-1; text-align:center; padding:80px 20px">
+        <i class="bi bi-people" style="font-size:3rem; color:var(--border-hi)"></i>
+        <h4 style="color:var(--text); margin-top:16px">No classes available</h4>
+        <p>Check back soon for upcoming group classes.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

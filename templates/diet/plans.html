@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Nutrition Plans — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container">
+
+    <div class="section-header">
+      <h2>NUTRITION <em style="color:var(--primary)">PLANS</em></h2>
+      <p>Science-backed meal plans tailored to your fitness goals.</p>
+    </div>
+
+    <!-- Filter -->
+    <form method="get" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:40px">
+      <select name="goal" class="form-control" style="width:auto" onchange="this.form.submit()">
+        <option value="">All Goals</option>
+        {% for val, label in goals %}
+        <option value="{{ val }}" {% if request.GET.goal == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      {% if request.GET.goal %}
+      <a href="{% url 'diet_plans' %}" class="btn btn-ghost btn-sm" style="align-self:center">Clear</a>
+      {% endif %}
+    </form>
+
+    <div class="grid-3">
+      {% for plan in plans %}
+      <div class="card" data-aos>
+        <div class="card-body">
+          <span class="card-tag {% if plan.goal == 'weight_loss' %}accent{% elif plan.goal == 'muscle_gain' %}cyan{% endif %}" style="margin-bottom:16px; display:inline-block">
+            {{ plan.get_goal_display }}
+          </span>
+          <h4 style="color:var(--text); margin-bottom:8px">{{ plan.title }}</h4>
+          <p style="font-size:.88rem; margin-bottom:16px">{{ plan.description|truncatechars:100 }}</p>
+
+          <div style="display:flex; gap:16px; font-size:.82rem; color:var(--text-dim); margin-bottom:20px">
+            <span><i class="bi bi-fire" style="color:var(--accent)"></i> {{ plan.daily_calories }} cal/day</span>
+            <span><i class="bi bi-calendar3" style="color:var(--primary)"></i> {{ plan.duration_weeks }} weeks</span>
+          </div>
+
+          {% if user.is_authenticated %}
+          <a href="{% url 'diet_detail' plan.pk %}" class="btn btn-ghost btn-sm btn-full">
+            View Plan <i class="bi bi-arrow-right"></i>
+          </a>
+          {% else %}
+          <a href="{% url 'account_login' %}?next={% url 'diet_detail' plan.pk %}" class="btn btn-ghost btn-sm btn-full">
+            Login to View
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div style="grid-column:1/-1; text-align:center; padding:80px 20px">
+        <i class="bi bi-egg-fried" style="font-size:3rem; color:var(--border-hi)"></i>
+        <h4 style="color:var(--text); margin-top:16px">No nutrition plans yet</h4>
+        <p>Check back soon — our nutritionists are working on new plans.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div style="display:flex; justify-content:center; gap:8px; margin-top:48px">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-ghost btn-sm">← Prev</a>
+      {% endif %}
+      <span style="padding:8px 16px; color:var(--text-dim); font-size:.9rem">Page {{ page_obj.number }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-ghost btn-sm">Next →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

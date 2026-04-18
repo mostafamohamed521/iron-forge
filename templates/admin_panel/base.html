@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+.admin-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: calc(100vh - var(--nav-h));
+  margin-top: var(--nav-h);
+}
+.admin-sidebar {
+  background: #0d0d0d;
+  border-right: 1px solid var(--border);
+  padding: 24px 12px;
+  position: sticky;
+  top: var(--nav-h);
+  height: calc(100vh - var(--nav-h));
+  overflow-y: auto;
+}
+.admin-sidebar-header {
+  padding: 0 12px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.admin-sidebar-header .badge {
+  display: inline-block;
+  padding: 3px 8px;
+  background: rgba(255,75,38,.15);
+  color: var(--accent);
+  border: 1px solid rgba(255,75,38,.3);
+  border-radius: 4px;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.admin-nav-label {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 12px;
+  margin: 20px 0 6px;
+}
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  font-size: .88rem;
+  color: var(--text-dim);
+  transition: all var(--transition);
+  margin-bottom: 2px;
+}
+.admin-nav-link:hover { background: var(--card); color: var(--text); }
+.admin-nav-link.active { background: rgba(255,75,38,.1); color: var(--accent); border-left: 3px solid var(--accent); }
+.admin-nav-link i { font-size: 1rem; width: 18px; text-align: center; }
+.admin-main { padding: 36px 40px; overflow-y: auto; }
+.admin-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.admin-page-header h1 {
+  font-size: 2rem;
+  margin-bottom: 4px;
+}
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+@media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+.kpi-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; margin-bottom: 14px;
+}
+.kpi-value { font-family: var(--font-display); font-size: 2.2rem; line-height: 1; }
+.kpi-label { font-size: .8rem; color: var(--text-dim); margin-top: 4px; }
+.kpi-change { font-size: .78rem; margin-top: 8px; }
+.data-table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.data-table-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.search-box {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--dark); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 8px 14px;
+}
+.search-box input {
+  background: none; border: none; color: var(--text);
+  font-family: var(--font-body); font-size: .9rem; width: 220px;
+}
+.search-box input:focus { outline: none; }
+.search-box input::placeholder { color: var(--muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-header">
+      <div class="badge">Admin Panel</div>
+      <div style="font-weight:600; color:var(--text); font-size:.9rem">{{ request.user.get_full_name }}</div>
+      <div style="font-size:.78rem; color:var(--text-dim)">{{ request.user.email }}</div>
+    </div>
+
+    <div class="admin-nav-label">Overview</div>
+    <a href="{% url 'admin_dashboard' %}" class="admin-nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+
+    <div class="admin-nav-label">Users</div>
+    <a href="{% url 'admin_users' %}" class="admin-nav-link {% if 'admin_user' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-people"></i> All Members
+    </a>
+
+    <div class="admin-nav-label">Memberships</div>
+    <a href="{% url 'admin_plans' %}" class="admin-nav-link {% if request.resolver_match.url_name == 'admin_plans' %}active{% endif %}">
+      <i class="bi bi-collection"></i> Plans
+    </a>
+    <a href="{% url 'admin_memberships' %}" class="admin-nav-link {% if request.resolver_match.url_name == 'admin_memberships' %}active{% endif %}">
+      <i class="bi bi-credit-card"></i> Subscriptions
+    </a>
+
+    <div class="admin-nav-label">Training</div>
+    <a href="{% url 'admin_sessions' %}" class="admin-nav-link {% if request.resolver_match.url_name == 'admin_sessions' %}active{% endif %}">
+      <i class="bi bi-calendar-event"></i> Sessions
+    </a>
+    <a href="{% url 'admin_workouts' %}" class="admin-nav-link {% if request.resolver_match.url_name == 'admin_workouts' %}active{% endif %}">
+      <i class="bi bi-activity"></i> Workout Programs
+    </a>
+    <a href="{% url 'admin_diets' %}" class="admin-nav-link {% if request.resolver_match.url_name == 'admin_diets' %}active{% endif %}">
+      <i class="bi bi-apple"></i> Diet Plans
+    </a>
+
+    <div class="admin-nav-label">Finance</div>
+    <a href="{% url 'admin_payments' %}" class="admin-nav-link {% if request.resolver_match.url_name == 'admin_payments' %}active{% endif %}">
+      <i class="bi bi-receipt"></i> Payments
+    </a>
+
+    <div class="admin-nav-label">System</div>
+    <a href="/admin/" class="admin-nav-link" target="_blank">
+      <i class="bi bi-gear"></i> Django Admin <i class="bi bi-box-arrow-up-right" style="font-size:.7rem; opacity:.5"></i>
+    </a>
+    <a href="{% url 'landing' %}" class="admin-nav-link">
+      <i class="bi bi-arrow-left"></i> Back to Site
+    </a>
+  </aside>
+
+  <!-- Main content -->
+  <div class="admin-main">
+    {% block admin_content %}{% endblock %}
+  </div>
+
+</div>
+{% endblock %}

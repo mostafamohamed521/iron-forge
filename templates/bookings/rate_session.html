@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Rate Session — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container" style="max-width:560px">
+
+    <div style="margin-bottom:32px">
+      <a href="{% url 'my_bookings' %}" style="color:var(--text-dim); font-size:.9rem"><i class="bi bi-arrow-left"></i> Back to My Bookings</a>
+      <h1 class="page-title" style="margin-top:16px">Rate Your Session</h1>
+      <p class="page-subtitle">{{ booking.session.title }} with {{ booking.session.trainer.get_full_name }}</p>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+
+        <div style="display:flex; align-items:center; gap:16px; padding:16px; background:var(--dark); border-radius:var(--radius); border:1px solid var(--border); margin-bottom:28px">
+          <div style="width:48px;height:48px;border-radius:var(--radius);background:rgba(232,255,60,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="bi bi-person-video2" style="font-size:1.3rem; color:var(--primary)"></i>
+          </div>
+          <div>
+            <div style="font-weight:600; color:var(--text)">{{ booking.session.title }}</div>
+            <div style="font-size:.82rem; color:var(--text-dim)">{{ booking.session.date|date:"l, N j, Y" }} · {{ booking.session.start_time|time:"g:i A" }}</div>
+          </div>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div style="text-align:center; margin-bottom:28px">
+            <label class="form-label" style="display:block; text-align:center; margin-bottom:16px; font-size:1rem">How was your session?</label>
+            <div class="star-rating" id="starRating" style="display:flex; justify-content:center; gap:12px">
+              <input type="hidden" name="rating" id="ratingInput" value="5" required />
+              {% for i in "12345" %}
+              <button type="button" class="star-btn" data-val="{{ forloop.counter }}"
+                style="background:none; border:none; cursor:pointer; font-size:2.5rem; color:var(--warning); transition:transform .15s; padding:0">
+                ★
+              </button>
+              {% endfor %}
+            </div>
+            <div id="ratingLabel" style="font-size:.9rem; color:var(--text-dim); margin-top:8px">Excellent</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Write a Review (optional)</label>
+            <textarea name="review" class="form-control" rows="4"
+              placeholder="Share your experience — what did you love? What could improve?"></textarea>
+          </div>
+
+          <div style="display:flex; gap:12px; margin-top:8px">
+            <button type="submit" class="btn btn-primary btn-lg" style="flex:1">
+              <i class="bi bi-star-fill"></i> Submit Review
+            </button>
+            <a href="{% url 'my_bookings' %}" class="btn btn-ghost btn-lg">Skip</a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const labels = ['', 'Poor', 'Below Average', 'Good', 'Very Good', 'Excellent'];
+const buttons = document.querySelectorAll('.star-btn');
+const input = document.getElementById('ratingInput');
+const labelEl = document.getElementById('ratingLabel');
+let current = 5;
+
+function setRating(val) {
+  current = val;
+  input.value = val;
+  labelEl.textContent = labels[val];
+  buttons.forEach((btn, i) => {
+    btn.style.color = i < val ? 'var(--warning)' : 'var(--border-hi)';
+    btn.style.transform = i < val ? 'scale(1.1)' : 'scale(1)';
+  });
+}
+
+buttons.forEach((btn, i) => {
+  btn.addEventListener('click', () => setRating(i + 1));
+  btn.addEventListener('mouseenter', () => {
+    buttons.forEach((b, j) => {
+      b.style.color = j <= i ? 'var(--warning)' : 'var(--border-hi)';
+    });
+    labelEl.textContent = labels[i + 1];
+  });
+  btn.addEventListener('mouseleave', () => setRating(current));
+});
+
+setRating(5);
+</script>
+{% endblock %}

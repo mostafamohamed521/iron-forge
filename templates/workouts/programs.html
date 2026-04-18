@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Workout Programs — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container">
+    <div class="section-header">
+      <h2>WORKOUT <em style="color:var(--primary)">PROGRAMS</em></h2>
+      <p>Science-backed programs for every goal and fitness level.</p>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:40px">
+      <select name="level" class="form-control" style="width:auto" onchange="this.form.submit()">
+        <option value="">All Levels</option>
+        {% for val, label in levels %}
+        <option value="{{ val }}" {% if request.GET.level == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="goal" class="form-control" style="width:auto" onchange="this.form.submit()">
+        <option value="">All Goals</option>
+        {% for val, label in goals %}
+        <option value="{{ val }}" {% if request.GET.goal == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </form>
+
+    <div class="grid-3">
+      {% for program in programs %}
+      <div class="card" data-aos>
+        {% if program.thumbnail %}
+          <img src="{{ program.thumbnail.url }}" alt="{{ program.title }}" class="card-img" />
+        {% else %}
+          <div class="card-img flex-center" style="background:linear-gradient(135deg,#161616,#222); font-size:3rem; color:var(--border-hi)">
+            <i class="bi bi-activity"></i>
+          </div>
+        {% endif %}
+        <div class="card-body">
+          <div style="display:flex; gap:8px; margin-bottom:12px">
+            <span class="card-tag">{{ program.get_level_display }}</span>
+            <span class="card-tag accent">{{ program.get_goal_display }}</span>
+          </div>
+          <h4 style="color:var(--text); margin-bottom:8px">{{ program.title }}</h4>
+          <p style="font-size:.88rem; margin-bottom:16px">{{ program.description|truncatechars:100 }}</p>
+          <div style="display:flex; gap:16px; font-size:.82rem; color:var(--text-dim); margin-bottom:16px">
+            <span><i class="bi bi-calendar3"></i> {{ program.duration_weeks }} weeks</span>
+            <span><i class="bi bi-arrow-repeat"></i> {{ program.days_per_week }}x/week</span>
+          </div>
+          <a href="{% url 'workout_detail' program.pk %}" class="btn btn-ghost btn-sm btn-full">
+            View Program <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      {% empty %}
+      <div style="grid-column:1/-1; text-align:center; padding:80px 20px">
+        <i class="bi bi-activity" style="font-size:3rem; color:var(--border-hi)"></i>
+        <p style="margin-top:16px">No programs found. Try adjusting your filters.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div style="display:flex; justify-content:center; gap:8px; margin-top:48px">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-ghost btn-sm">← Prev</a>
+      {% endif %}
+      <span style="padding:8px 16px; color:var(--text-dim); font-size:.9rem">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-ghost btn-sm">Next →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

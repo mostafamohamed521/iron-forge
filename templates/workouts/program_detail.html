@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}{{ program.title }} — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container" style="max-width:960px">
+
+    <!-- Header -->
+    <div style="margin-bottom:40px">
+      <a href="{% url 'workouts' %}" style="color:var(--text-dim); font-size:.88rem"><i class="bi bi-arrow-left"></i> Back to Programs</a>
+      <div style="display:flex; gap:8px; margin:16px 0 12px">
+        <span class="card-tag">{{ program.get_level_display }}</span>
+        <span class="card-tag accent">{{ program.get_goal_display }}</span>
+        {% if is_assigned %}<span class="card-tag cyan">Assigned to You</span>{% endif %}
+      </div>
+      <h1 style="font-size:clamp(2rem,5vw,3.5rem); margin-bottom:12px">{{ program.title|upper }}</h1>
+      <p style="font-size:1rem; max-width:600px">{{ program.description }}</p>
+      <div style="display:flex; gap:24px; margin-top:20px; font-size:.9rem; color:var(--text-dim)">
+        <span><i class="bi bi-calendar3" style="color:var(--primary)"></i> {{ program.duration_weeks }} weeks</span>
+        <span><i class="bi bi-arrow-repeat" style="color:var(--primary)"></i> {{ program.days_per_week }} days/week</span>
+        {% if program.created_by %}<span><i class="bi bi-person" style="color:var(--primary)"></i> by {{ program.created_by.get_full_name }}</span>{% endif %}
+      </div>
+    </div>
+
+    <!-- Days -->
+    {% for day in days %}
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-body">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:{% if not day.rest_day %}20px{% else %}0{% endif %}">
+          <div style="display:flex; align-items:center; gap:14px">
+            <div style="width:48px;height:48px;border-radius:var(--radius);background:rgba(232,255,60,0.1);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.2rem;color:var(--primary)">
+              {{ day.day_number }}
+            </div>
+            <div>
+              <div style="font-weight:600; color:var(--text)">{{ day.title }}</div>
+              {% if day.focus %}<div style="font-size:.82rem; color:var(--text-dim)">Focus: {{ day.focus }}</div>{% endif %}
+            </div>
+          </div>
+          {% if day.rest_day %}
+            <span class="card-tag" style="background:rgba(100,100,100,.1); color:#888; border-color:#333">REST DAY</span>
+          {% endif %}
+        </div>
+
+        {% if not day.rest_day %}
+        <div style="display:flex; flex-direction:column; gap:12px">
+          {% for set in day.sets.all %}
+          <div style="display:flex; align-items:center; gap:16px; padding:14px; background:var(--dark); border-radius:var(--radius); border:1px solid var(--border)">
+            <div style="width:36px;height:36px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:.8rem;font-weight:700;flex-shrink:0">
+              {{ forloop.counter }}
+            </div>
+            <div style="flex:1">
+              <div style="font-weight:500; color:var(--text); font-size:.95rem">{{ set.exercise.name }}</div>
+              <div style="font-size:.8rem; color:var(--text-dim); margin-top:2px">
+                {{ set.exercise.get_equipment_display }}
+                {% if set.exercise.muscle_groups.all %}
+                  · {% for mg in set.exercise.muscle_groups.all %}{{ mg.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                {% endif %}
+              </div>
+            </div>
+            <div style="text-align:center; min-width:60px">
+              <div style="font-family:var(--font-display); font-size:1.4rem; color:var(--primary); line-height:1">{{ set.sets }}</div>
+              <div style="font-size:.7rem; color:var(--text-dim)">SETS</div>
+            </div>
+            <div style="text-align:center; min-width:60px">
+              <div style="font-family:var(--font-display); font-size:1.4rem; color:var(--text); line-height:1">{{ set.reps }}</div>
+              <div style="font-size:.7rem; color:var(--text-dim)">REPS</div>
+            </div>
+            <div style="text-align:center; min-width:60px">
+              <div style="font-family:var(--font-display); font-size:1.4rem; color:var(--text-dim); line-height:1">{{ set.rest_seconds }}s</div>
+              <div style="font-size:.7rem; color:var(--text-dim)">REST</div>
+            </div>
+          </div>
+          {% empty %}
+          <p style="color:var(--text-dim); font-size:.9rem">No exercises assigned yet.</p>
+          {% endfor %}
+        </div>
+        {% if user.is_authenticated %}
+        <div style="margin-top:16px">
+          <a href="{% url 'log_workout' day.id %}" class="btn btn-ghost btn-sm">
+            <i class="bi bi-check2-circle"></i> Log This Workout
+          </a>
+        </div>
+        {% endif %}
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+{% endblock %}

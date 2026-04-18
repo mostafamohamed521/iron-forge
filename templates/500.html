@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Server Error — IronForge{% endblock %}
+{% block content %}
+<div style="min-height:calc(100vh - var(--nav-h));display:flex;align-items:center;justify-content:center;padding-top:var(--nav-h)">
+  <div style="text-align:center;padding:40px 24px">
+    <div style="font-family:var(--font-display);font-size:clamp(6rem,20vw,14rem);line-height:1;color:var(--border);margin-bottom:0">500</div>
+    <h2 style="font-size:clamp(1.5rem,4vw,2.5rem);margin-bottom:16px">SERVER <em style="color:var(--accent)">ERROR</em></h2>
+    <p style="font-size:1rem;max-width:400px;margin:0 auto 40px">Something went wrong on our end. We're on it. Try again in a moment.</p>
+    <a href="/" class="btn btn-primary"><i class="bi bi-house-fill"></i> Go Home</a>
+  </div>
+</div>
+{% endblock %}

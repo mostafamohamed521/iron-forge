@@ -1,0 +1,39 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Diet Plans — Admin — IronForge{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div><h1>Diet Plans</h1><p style="color:var(--text-dim); margin:0">Manage nutrition plans</p></div>
+  <a href="/admin/diet/dietplan/add/" class="btn btn-primary" target="_blank"><i class="bi bi-plus-lg"></i> Add Plan</a>
+</div>
+<div class="data-table-wrap">
+  <table>
+    <thead><tr><th>Plan</th><th>Goal</th><th>Calories</th><th>Duration</th><th>Members</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      {% for diet in page_obj %}
+      <tr>
+        <td style="color:var(--text); font-weight:500">{{ diet.title }}</td>
+        <td><span class="card-tag" style="font-size:.7rem">{{ diet.get_goal_display }}</span></td>
+        <td style="color:var(--primary); font-weight:600">{{ diet.daily_calories }} kcal</td>
+        <td style="font-size:.85rem">{{ diet.duration_weeks }} weeks</td>
+        <td style="font-weight:600; color:var(--text)">{{ diet.member_count }}</td>
+        <td>
+          <span style="font-size:.72rem; padding:3px 8px; border-radius:4px; background:{% if diet.is_active %}rgba(34,197,94,.1){% else %}rgba(239,68,68,.1){% endif %}; color:{% if diet.is_active %}var(--success){% else %}var(--danger){% endif %}">
+            {% if diet.is_active %}ACTIVE{% else %}INACTIVE{% endif %}
+          </span>
+        </td>
+        <td>
+          <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle" />
+            <input type="hidden" name="diet_id" value="{{ diet.id }}" />
+            <button type="submit" class="btn btn-ghost btn-sm">{% if diet.is_active %}Deactivate{% else %}Activate{% endif %}</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center; padding:48px; color:var(--muted)">No diet plans yet. <a href="/admin/diet/dietplan/add/" style="color:var(--primary)">Create one in Django Admin</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

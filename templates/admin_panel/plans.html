@@ -1,0 +1,82 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Plans — Admin — IronForge{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div><h1>Membership Plans</h1><p style="color:var(--text-dim); margin:0">Manage pricing and features</p></div>
+  <button class="btn btn-primary" onclick="document.getElementById('createPlanModal').style.display='flex'">
+    <i class="bi bi-plus-lg"></i> New Plan
+  </button>
+</div>
+<div class="grid-3">
+  {% for plan in plans %}
+  <div class="card" style="{% if plan.is_active %}border-color:var(--border-hi){% else %}opacity:.5{% endif %}">
+    <div class="card-body">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px">
+        <div>
+          <div style="font-family:var(--font-display); font-size:1.8rem; color:var(--text)">{{ plan.display_name|upper }}</div>
+          <div style="font-size:.82rem; color:var(--text-dim)">{{ plan.get_billing_cycle_display }}</div>
+        </div>
+        <div style="font-family:var(--font-display); font-size:2.5rem; color:var(--primary); line-height:1">${{ plan.price }}</div>
+      </div>
+      <div style="font-size:.82rem; color:var(--text-dim); margin-bottom:12px">{{ plan.duration_days }} days · {{ plan.subscriber_count }} active subscribers</div>
+      {% if plan.features %}
+      <ul style="font-size:.82rem; color:var(--text-dim); margin-bottom:16px; display:flex; flex-direction:column; gap:6px">
+        {% for f in plan.features %}<li><i class="bi bi-check-circle-fill" style="color:var(--primary)"></i> {{ f }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="toggle" />
+        <input type="hidden" name="plan_id" value="{{ plan.id }}" />
+        <button type="submit" class="btn {% if plan.is_active %}btn-ghost{% else %}btn-primary{% endif %} btn-sm btn-full">
+          {% if plan.is_active %}Deactivate{% else %}Activate{% endif %}
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<!-- Create Plan Modal -->
+<div id="createPlanModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:9999; align-items:center; justify-content:center; padding:20px">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:var(--radius-xl); padding:36px; width:100%; max-width:480px">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <h3 style="color:var(--text)">Create New Plan</h3>
+      <button onclick="document.getElementById('createPlanModal').style.display='none'" style="color:var(--text-dim); font-size:1.2rem; background:none; border:none; cursor:pointer">✕</button>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create" />
+      <div class="form-group">
+        <label class="form-label">Plan Key (basic/premium/vip)</label>
+        <input type="text" name="name" class="form-control" placeholder="e.g. elite" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Display Name</label>
+        <input type="text" name="display_name" class="form-control" placeholder="e.g. Elite" required />
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Price ($)</label>
+          <input type="number" name="price" class="form-control" step="0.01" min="0" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration (days)</label>
+          <input type="number" name="duration_days" class="form-control" value="30" min="1" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Features (one per line)</label>
+        <textarea name="features" class="form-control" rows="4" placeholder="Gym floor access&#10;Locker room&#10;Pool access"></textarea>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:8px">
+        <button type="submit" class="btn btn-primary" style="flex:1">Create Plan</button>
+        <button type="button" onclick="document.getElementById('createPlanModal').style.display='none'" class="btn btn-ghost">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

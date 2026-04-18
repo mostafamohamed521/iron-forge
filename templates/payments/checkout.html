@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}Checkout — {{ plan.display_name }} — IronForge{% endblock %}
+
+{% block content %}
+<div style="min-height:calc(100vh - var(--nav-h)); padding-top:calc(var(--nav-h) + 60px); padding-bottom:80px">
+  <div class="container" style="max-width:960px">
+    <h1 class="page-title">Secure Checkout</h1>
+    <p class="page-subtitle">You're one step away from your transformation.</p>
+
+    <div class="grid-2" style="gap:40px; align-items:start">
+
+      <!-- Plan Summary -->
+      <div>
+        <div class="card">
+          <div class="card-body">
+            <h4 style="color:var(--text-dim); font-size:.8rem; text-transform:uppercase; letter-spacing:.1em; margin-bottom:20px">Order Summary</h4>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+              <div>
+                <div style="font-family:var(--font-display); font-size:1.8rem; color:var(--text)">{{ plan.display_name }}</div>
+                <div style="font-size:.88rem; color:var(--text-dim)">{{ plan.get_billing_cycle_display }} subscription · {{ plan.duration_days }} days</div>
+              </div>
+              <span class="membership-badge {{ plan.name }}">{{ plan.name|upper }}</span>
+            </div>
+            <hr style="border:none; border-top:1px solid var(--border); margin:20px 0" />
+            <ul style="list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:24px">
+              {% for feat in plan.features %}
+              <li style="display:flex; align-items:center; gap:10px; font-size:.9rem; color:var(--text-dim)">
+                <i class="bi bi-check-circle-fill" style="color:var(--primary)"></i>{{ feat }}
+              </li>
+              {% endfor %}
+            </ul>
+            <hr style="border:none; border-top:1px solid var(--border); margin:20px 0" />
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <span style="color:var(--text-dim)">Total today</span>
+              <span style="font-family:var(--font-display); font-size:2.5rem; color:var(--text)">${{ plan.price }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:10px; margin-top:20px; padding:14px 20px; background:var(--card); border-radius:var(--radius); border:1px solid var(--border)">
+          <i class="bi bi-shield-lock-fill" style="color:var(--success); font-size:1.2rem"></i>
+          <p style="font-size:.82rem; max-width:none; margin:0">Payments secured by <strong>Stripe</strong>. Your card info never touches our servers.</p>
+        </div>
+      </div>
+
+      <!-- Payment Form -->
+      <div>
+        <div class="card">
+          <div class="card-body">
+            <h4 style="color:var(--text); margin-bottom:24px">Payment Details</h4>
+
+            <div id="payment-errors" style="display:none; padding:12px 16px; background:rgba(239,68,68,0.1); border:1px solid var(--danger); border-radius:var(--radius); margin-bottom:20px; color:var(--danger); font-size:.9rem"></div>
+
+            <div class="form-group">
+              <label class="form-label">Card Number</label>
+              <div id="card-element" style="padding:14px 16px; background:var(--dark); border:1px solid var(--border); border-radius:var(--radius)"></div>
+            </div>
+
+            <div class="grid-2" style="gap:16px">
+              <div class="form-group">
+                <label class="form-label">Name on Card</label>
+                <input type="text" id="card-name" class="form-control" placeholder="John Doe" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" value="{{ user.email }}" readonly style="opacity:.7" />
+              </div>
+            </div>
+
+            <button id="submit-btn" class="btn btn-primary btn-full btn-lg" onclick="handlePayment()">
+              <span id="btn-text"><i class="bi bi-lock-fill"></i> Pay ${{ plan.price }}</span>
+              <span id="btn-loading" style="display:none"><div class="spinner"></div> Processing...</span>
+            </button>
+
+            <p style="text-align:center; font-size:.8rem; margin-top:16px; max-width:none">
+              By subscribing you agree to our <a href="#" style="color:var(--primary)">Terms</a> & <a href="#" style="color:var(--primary)">Privacy Policy</a>.<br>You can cancel anytime.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+const stripe = Stripe('{{ stripe_public_key }}');
+const elements = stripe.elements({ appearance: { theme: 'night', variables: { colorPrimary: '#e8ff3c', colorBackground: '#111', colorText: '#e8e8e8' } } });
+const card = elements.create('card', { style: { base: { color: '#e8e8e8', fontFamily: 'DM Sans, sans-serif', fontSize: '15px' } } });
+card.mount('#card-element');
+card.on('change', e => {
+  const el = document.getElementById('payment-errors');
+  el.style.display = e.error ? 'block' : 'none';
+  if (e.error) el.textContent = e.error.message;
+});
+
+async function handlePayment() {
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  document.getElementById('btn-text').style.display = 'none';
+  document.getElementById('btn-loading').style.display = 'flex';
+
+  try {
+    const resp = await fetch('', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+      body: JSON.stringify({ plan_id: {{ plan.id }} })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+
+    const result = await stripe.confirmCardPayment(data.client_secret, {
+      payment_method: { card, billing_details: { name: document.getElementById('card-name').value, email: '{{ user.email }}' } }
+    });
+
+    if (result.error) throw new Error(result.error.message);
+
+    window.location.href = `/payments/success/?payment_intent=${result.paymentIntent.id}`;
+  } catch (err) {
+    const el = document.getElementById('payment-errors');
+    el.style.display = 'block';
+    el.textContent = err.message;
+    btn.disabled = false;
+    document.getElementById('btn-text').style.display = 'flex';
+    document.getElementById('btn-loading').style.display = 'none';
+  }
+}
+</script>
+{% endblock %}

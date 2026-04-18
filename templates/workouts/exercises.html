@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Exercise Library — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container">
+
+    <div style="margin-bottom:40px">
+      <h1 class="page-title">EXERCISE <em style="color:var(--primary)">LIBRARY</em></h1>
+      <p class="page-subtitle">{{ page_obj.paginator.count }} exercises with full instructions and muscle group targeting.</p>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:36px; align-items:flex-end">
+      <div>
+        <label class="form-label">Difficulty</label>
+        <select name="difficulty" class="form-control" style="width:auto" onchange="this.form.submit()">
+          <option value="">All Levels</option>
+          {% for val, label in difficulties %}<option value="{{ val }}" {% if request.GET.difficulty == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Equipment</label>
+        <select name="equipment" class="form-control" style="width:auto" onchange="this.form.submit()">
+          <option value="">Any Equipment</option>
+          {% for val, label in equipment_choices %}<option value="{{ val }}" {% if request.GET.equipment == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      {% if request.GET.difficulty or request.GET.equipment %}
+      <a href="{% url 'exercises' %}" class="btn btn-ghost btn-sm" style="align-self:flex-end">Clear</a>
+      {% endif %}
+    </form>
+
+    <div class="grid-3">
+      {% for ex in exercises %}
+      <div class="card" data-aos style="animation-delay:{{ forloop.counter0|divisibleby:3 }}00ms">
+        <!-- Color-coded header by difficulty -->
+        <div style="height:100px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;
+          background:{% if ex.difficulty == 'beginner' %}linear-gradient(135deg,#0a1a0a,#152415)
+          {% elif ex.difficulty == 'intermediate' %}linear-gradient(135deg,#1a1200,#2a1f00)
+          {% else %}linear-gradient(135deg,#1a0a0a,#2a0f0f){% endif %}">
+          <i class="bi bi-person-arms-up" style="font-size:3rem; opacity:.15; color:
+            {% if ex.difficulty == 'beginner' %}var(--success)
+            {% elif ex.difficulty == 'intermediate' %}var(--warning)
+            {% else %}var(--accent){% endif %}"></i>
+          <div style="position:absolute; top:10px; left:12px; display:flex; gap:6px">
+            <span class="card-tag {% if ex.difficulty == 'advanced' %}accent{% elif ex.difficulty == 'intermediate' %}{% else %}{% endif %}" style="font-size:.68rem;
+              {% if ex.difficulty == 'beginner' %}background:rgba(34,197,94,.1);color:var(--success);border-color:rgba(34,197,94,.2)
+              {% elif ex.difficulty == 'intermediate' %}background:rgba(245,158,11,.1);color:var(--warning);border-color:rgba(245,158,11,.2)
+              {% else %}background:rgba(255,75,38,.1);color:var(--accent);border-color:rgba(255,75,38,.2){% endif %}">
+              {{ ex.get_difficulty_display }}
+            </span>
+            <span class="card-tag cyan" style="font-size:.68rem">{{ ex.get_equipment_display }}</span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <h4 style="color:var(--text); margin-bottom:8px; font-size:1rem">{{ ex.name }}</h4>
+
+          {% if ex.muscle_groups.all %}
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px">
+            {% for mg in ex.muscle_groups.all %}
+            <span style="padding:2px 8px; background:var(--dark); border:1px solid var(--border); border-radius:100px; font-size:.72rem; color:var(--text-dim)">{{ mg.name }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <p style="font-size:.85rem; margin-bottom:16px; line-height:1.5">{{ ex.description|truncatechars:100 }}</p>
+
+          <!-- Instructions preview -->
+          {% if ex.instructions %}
+          <details style="margin-bottom:16px">
+            <summary style="font-size:.82rem; color:var(--primary); cursor:pointer; list-style:none; display:flex; align-items:center; gap:6px">
+              <i class="bi bi-list-check"></i> View Instructions
+            </summary>
+            <div style="margin-top:12px; padding:12px; background:var(--dark); border-radius:var(--radius); border:1px solid var(--border)">
+              {% for line in ex.instructions.splitlines %}
+                {% if line %}<div style="font-size:.82rem; color:var(--text-dim); padding:3px 0">{{ line }}</div>{% endif %}
+              {% endfor %}
+            </div>
+          </details>
+          {% endif %}
+
+          <div style="display:flex; align-items:center; justify-content:space-between">
+            <span style="font-size:.8rem; color:var(--text-dim)">
+              <i class="bi bi-fire" style="color:var(--accent)"></i> ~{{ ex.calories_per_minute|floatformat:0 }} cal/min
+            </span>
+            {% if ex.video_url %}
+            <a href="{{ ex.video_url }}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
+              <i class="bi bi-play-circle-fill" style="color:var(--accent)"></i> Video
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div style="grid-column:1/-1; text-align:center; padding:80px 20px">
+        <i class="bi bi-search" style="font-size:3rem; color:var(--border-hi)"></i>
+        <h4 style="color:var(--text); margin-top:16px">No exercises found</h4>
+        <p>Try adjusting your filters.</p>
+        <a href="{% url 'exercises' %}" class="btn btn-ghost btn-sm" style="margin-top:16px">Clear Filters</a>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:48px">
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&difficulty={{ request.GET.difficulty }}&equipment={{ request.GET.equipment }}" class="btn btn-ghost btn-sm">← Prev</a>{% endif %}
+      <span style="padding:8px 20px; color:var(--text-dim); font-size:.9rem; background:var(--card); border:1px solid var(--border); border-radius:var(--radius)">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&difficulty={{ request.GET.difficulty }}&equipment={{ request.GET.equipment }}" class="btn btn-ghost btn-sm">Next →</a>{% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Payment History — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container" style="max-width:900px">
+
+    <div style="margin-bottom:40px">
+      <h1 class="page-title">Payment History</h1>
+      <p class="page-subtitle">All your transactions in one place.</p>
+    </div>
+
+    {% if payments %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for payment in payments %}
+          <tr>
+            <td style="color:var(--text)">{{ payment.created_at|date:"N j, Y" }}</td>
+            <td style="color:var(--text)">{{ payment.description|default:"—" }}</td>
+            <td>
+              <span class="card-tag" style="font-size:.7rem">{{ payment.get_payment_type_display }}</span>
+            </td>
+            <td style="font-family:var(--font-display); font-size:1.1rem; color:var(--primary)">
+              ${{ payment.amount }}
+            </td>
+            <td>
+              {% if payment.status == 'succeeded' %}
+                <span style="display:inline-flex; align-items:center; gap:6px; color:var(--success); font-size:.85rem">
+                  <i class="bi bi-check-circle-fill"></i> Paid
+                </span>
+              {% elif payment.status == 'pending' %}
+                <span style="display:inline-flex; align-items:center; gap:6px; color:var(--warning); font-size:.85rem">
+                  <i class="bi bi-clock-fill"></i> Pending
+                </span>
+              {% elif payment.status == 'refunded' %}
+                <span style="display:inline-flex; align-items:center; gap:6px; color:var(--accent2); font-size:.85rem">
+                  <i class="bi bi-arrow-counterclockwise"></i> Refunded
+                </span>
+              {% else %}
+                <span style="display:inline-flex; align-items:center; gap:6px; color:var(--danger); font-size:.85rem">
+                  <i class="bi bi-x-circle-fill"></i> {{ payment.get_status_display }}
+                </span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Total -->
+    <div style="display:flex; justify-content:flex-end; margin-top:20px; padding:16px 20px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius)">
+      <div style="text-align:right">
+        <div style="font-size:.82rem; color:var(--text-dim); margin-bottom:4px">Total Paid</div>
+        <div style="font-family:var(--font-display); font-size:2rem; color:var(--primary)">
+          ${{ total_paid|floatformat:2 }}
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <div style="text-align:center; padding:80px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg)">
+      <i class="bi bi-receipt" style="font-size:3rem; color:var(--border-hi)"></i>
+      <h4 style="color:var(--text); margin:16px 0 8px">No payments yet</h4>
+      <p style="margin-bottom:24px">Subscribe to a membership plan to get started.</p>
+      <a href="{% url 'membership_plans' %}" class="btn btn-primary">View Plans</a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

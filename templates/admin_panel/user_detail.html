@@ -1,0 +1,226 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}{{ u.get_full_name }} — Admin — IronForge{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+  <div style="display:flex; align-items:center; gap:16px">
+    <a href="{% url 'admin_users' %}" style="color:var(--text-dim)"><i class="bi bi-arrow-left"></i></a>
+    <div>
+      <h1 style="font-size:1.8rem">{{ u.get_full_name|default:u.email }}</h1>
+      <p style="margin:0; color:var(--text-dim)">{{ u.email }}</p>
+    </div>
+  </div>
+  <div style="display:flex; gap:8px">
+    <form method="post">{% csrf_token %}
+      <input type="hidden" name="action" value="toggle_active" />
+      <button type="submit" class="btn {% if u.is_active %}btn-ghost{% else %}btn-primary{% endif %} btn-sm"
+        data-confirm="{% if u.is_active %}Deactivate this user?{% else %}Activate this user?{% endif %}">
+        {% if u.is_active %}<i class="bi bi-person-slash"></i> Deactivate{% else %}<i class="bi bi-person-check"></i> Activate{% endif %}
+      </button>
+    </form>
+    <form method="post">{% csrf_token %}
+      <input type="hidden" name="action" value="toggle_trainer" />
+      <button type="submit" class="btn btn-ghost btn-sm">
+        {% if u.is_trainer %}<i class="bi bi-person-dash"></i> Remove Trainer{% else %}<i class="bi bi-person-plus"></i> Make Trainer{% endif %}
+      </button>
+    </form>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px">
+
+  <!-- Profile info -->
+  <div class="card">
+    <div class="card-body">
+      <h4 style="color:var(--text); margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border)">
+        <i class="bi bi-person" style="color:var(--primary)"></i> Profile
+      </h4>
+      <div style="display:flex; flex-direction:column; gap:12px; font-size:.9rem">
+        <div style="display:flex; justify-content:space-between">
+          <span style="color:var(--text-dim)">Status</span>
+          <span style="color:{% if u.is_active %}var(--success){% else %}var(--danger){% endif %}">
+            {% if u.is_active %}Active{% else %}Deactivated{% endif %}
+          </span>
+        </div>
+        <div style="display:flex; justify-content:space-between">
+          <span style="color:var(--text-dim)">Role</span>
+          <span style="color:var(--text)">{% if u.is_trainer %}Trainer{% else %}Member{% endif %}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between">
+          <span style="color:var(--text-dim)">Goal</span>
+          <span style="color:var(--text)">{{ u.get_fitness_goal_display }}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between">
+          <span style="color:var(--text-dim)">Level</span>
+          <span style="color:var(--text)">{{ u.get_fitness_level_display }}</span>
+        </div>
+        {% if u.height_cm %}
+        <div style="display:flex; justify-content:space-between">
+          <span style="color:var(--text-dim)">Height / Weight</span>
+          <span style="color:var(--text)">{{ u.height_cm }}cm / {{ u.weight_kg|default:"—" }}kg</span>
+        </div>
+        {% endif %}
+        {% if u.bmi %}
+        <div style="display:flex; justify-content:space-between">
+          <span style="color:var(--text-dim)">BMI</span>
+          <span style="color:var(--primary); font-weight:600">{{ u.bmi }}</span>
+        </div>
+        {% endif %}
+        <div style="display:flex; justify-content:space-between">
+          <span style="color:var(--text-dim)">Joined</span>
+          <span style="color:var(--text)">{{ u.created_at|date:"N j, Y" }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Membership -->
+  <div class="card">
+    <div class="card-body">
+      <h4 style="color:var(--text); margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border)">
+        <i class="bi bi-credit-card" style="color:var(--primary)"></i> Membership
+      </h4>
+      {% if active_membership %}
+        <span class="membership-badge {{ active_membership.plan.name }}">{{ active_membership.plan.display_name }}</span>
+        <div style="margin-top:12px; font-size:.88rem; color:var(--text-dim)">
+          <div>Valid until: <strong style="color:var(--text)">{{ active_membership.end_date|date:"N j, Y" }}</strong></div>
+          <div style="margin-top:4px">{{ active_membership.days_remaining }} days remaining</div>
+        </div>
+      {% else %}
+        <p style="color:var(--text-dim); font-size:.9rem; margin-bottom:16px">No active membership.</p>
+      {% endif %}
+
+      <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border)">
+        <h4 style="font-size:.8rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-dim); margin-bottom:12px">Grant Membership</h4>
+        <form method="post" style="display:flex; flex-direction:column; gap:10px">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="grant_membership" />
+          <select name="plan_id" class="form-control">
+            <option value="">Select plan...</option>
+            {% for plan in all_plans %}
+            <option value="{{ plan.id }}">{{ plan.display_name }} — ${{ plan.price }}</option>
+            {% endfor %}
+          </select>
+          <input type="number" name="days" class="form-control" placeholder="Duration (days)" value="30" min="1" max="365" />
+          <button type="submit" class="btn btn-primary btn-sm">Grant Membership</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assign Workout -->
+  <div class="card">
+    <div class="card-body">
+      <h4 style="color:var(--text); margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border)">
+        <i class="bi bi-activity" style="color:var(--primary)"></i> Workout Programs
+      </h4>
+      {% if assigned_programs %}
+        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px">
+          {% for prog in assigned_programs %}
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:var(--dark); border-radius:var(--radius); border:1px solid var(--border)">
+            <span style="font-size:.88rem; color:var(--text)">{{ prog.title }}</span>
+            <span class="card-tag" style="font-size:.7rem">{{ prog.get_level_display }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color:var(--text-dim); font-size:.88rem; margin-bottom:12px">No programs assigned.</p>
+      {% endif %}
+      <form method="post" style="display:flex; gap:8px">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="assign_workout" />
+        <select name="program_id" class="form-control" style="flex:1">
+          <option value="">Assign a program...</option>
+          {% for prog in all_programs %}
+          <option value="{{ prog.id }}">{{ prog.title }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Assign</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Assign Diet -->
+  <div class="card">
+    <div class="card-body">
+      <h4 style="color:var(--text); margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border)">
+        <i class="bi bi-apple" style="color:var(--primary)"></i> Diet Plans
+      </h4>
+      {% if assigned_diets %}
+        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px">
+          {% for diet in assigned_diets %}
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:var(--dark); border-radius:var(--radius); border:1px solid var(--border)">
+            <span style="font-size:.88rem; color:var(--text)">{{ diet.title }}</span>
+            <span class="card-tag" style="font-size:.7rem">{{ diet.get_goal_display }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color:var(--text-dim); font-size:.88rem; margin-bottom:12px">No diet plans assigned.</p>
+      {% endif %}
+      <form method="post" style="display:flex; gap:8px">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="assign_diet" />
+        <select name="diet_id" class="form-control" style="flex:1">
+          <option value="">Assign a diet plan...</option>
+          {% for diet in all_diets %}
+          <option value="{{ diet.id }}">{{ diet.title }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Assign</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Booking history -->
+<div class="data-table-wrap" style="margin-top:20px">
+  <div class="data-table-header">
+    <h4 style="color:var(--text); font-size:.95rem; margin:0"><i class="bi bi-calendar3" style="color:var(--primary)"></i> Recent Bookings</h4>
+  </div>
+  <table>
+    <thead><tr><th>Session</th><th>Trainer</th><th>Date</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for b in bookings %}
+      <tr>
+        <td style="color:var(--text)">{{ b.session.title }}</td>
+        <td style="font-size:.85rem">{{ b.session.trainer.get_full_name }}</td>
+        <td style="font-size:.85rem">{{ b.session.date|date:"N j, Y" }}</td>
+        <td><span style="font-size:.72rem; padding:3px 8px; border-radius:4px; background:rgba(34,197,94,.1); color:var(--success)">{{ b.get_status_display }}</span></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" style="text-align:center; padding:24px; color:var(--muted)">No bookings yet</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Payment history -->
+<div class="data-table-wrap" style="margin-top:20px">
+  <div class="data-table-header">
+    <h4 style="color:var(--text); font-size:.95rem; margin:0"><i class="bi bi-receipt" style="color:var(--primary)"></i> Payment History</h4>
+  </div>
+  <table>
+    <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td style="font-size:.85rem">{{ p.created_at|date:"N j, Y" }}</td>
+        <td style="color:var(--text)">{{ p.description|default:"—" }}</td>
+        <td style="color:var(--primary); font-weight:600">${{ p.amount }}</td>
+        <td>
+          <span style="font-size:.72rem; padding:3px 8px; border-radius:4px;
+            {% if p.status == 'succeeded' %}background:rgba(34,197,94,.1); color:var(--success)
+            {% else %}background:rgba(239,68,68,.1); color:var(--danger){% endif %}">
+            {{ p.get_status_display|upper }}
+          </span>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" style="text-align:center; padding:24px; color:var(--muted)">No payments</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

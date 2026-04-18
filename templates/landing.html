@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}IRONFORGE — Elite Gym & Fitness Platform{% endblock %}
+{% block body_class %}landing{% endblock %}
+{% block extra_css %}
+<style>
+.hero{min-height:100vh;display:flex;align-items:center;padding-top:var(--nav-h);position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 70% 50%,rgba(232,255,60,.06),transparent 60%),radial-gradient(ellipse 40% 60% at 20% 80%,rgba(255,75,38,.04),transparent 50%),var(--black)}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 30%,transparent 70%);opacity:.4}
+.feat-card{padding:28px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);transition:all var(--transition)}
+.feat-card:hover{border-color:var(--primary);transform:translateY(-4px)}
+.testimonial-card{padding:28px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg)}
+.ticker-wrap{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--dark);padding:14px 0}
+.ticker{display:flex;animation:ticker 25s linear infinite;width:max-content}
+.ticker-item{padding:0 40px;white-space:nowrap;font-size:.82rem;color:var(--text-dim);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.ticker-item span{color:var(--primary)}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div style="position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:0 24px;width:100%">
+    <div style="max-width:680px">
+      <div style="display:inline-flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--primary);margin-bottom:24px">
+        <span style="display:block;width:32px;height:2px;background:var(--primary)"></span>Elite Fitness Platform
+      </div>
+      <h1 style="color:var(--text);margin-bottom:24px;font-size:clamp(3.5rem,9vw,8rem);line-height:.95">FORGE<br>YOUR<br><em style="color:var(--primary);font-style:normal">BEST SELF</em></h1>
+      <p style="font-size:1.1rem;margin-bottom:40px;color:var(--text-dim);max-width:460px;line-height:1.7">World-class workouts, personalized nutrition, and elite trainer booking — everything to transform your body.</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:64px">
+        <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg"><i class="bi bi-lightning-charge-fill"></i> Start Free Trial</a>
+        <a href="{% url 'membership_plans' %}" class="btn btn-ghost btn-lg">View Plans</a>
+      </div>
+      <div style="display:flex;gap:48px;padding-top:40px;border-top:1px solid var(--border);flex-wrap:wrap">
+        <div>
+          <div style="font-family:var(--font-display);font-size:3rem;color:var(--text);line-height:1"><span data-counter data-target="{{ total_members }}">0</span>+</div>
+          <div style="font-size:.82rem;color:var(--text-dim);margin-top:4px">Active Members</div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display);font-size:3rem;color:var(--text);line-height:1"><span data-counter data-target="{{ total_programs }}">0</span>+</div>
+          <div style="font-size:.82rem;color:var(--text-dim);margin-top:4px">Programs</div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display);font-size:3rem;color:var(--text);line-height:1"><span data-counter data-target="{{ total_trainers }}">0</span></div>
+          <div style="font-size:.82rem;color:var(--text-dim);margin-top:4px">Elite Trainers</div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display);font-size:3rem;color:var(--text);line-height:1">98%</div>
+          <div style="font-size:.82rem;color:var(--text-dim);margin-top:4px">Satisfaction</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span class="ticker-item">Strength Training <span>•</span></span><span class="ticker-item">Weight Loss <span>•</span></span><span class="ticker-item">Personal Coaching <span>•</span></span><span class="ticker-item">Nutrition Plans <span>•</span></span><span class="ticker-item">Group Classes <span>•</span></span><span class="ticker-item">Body Transformation <span>•</span></span><span class="ticker-item">Muscle Building <span>•</span></span><span class="ticker-item">Endurance Training <span>•</span></span><span class="ticker-item">Recovery Science <span>•</span></span><span class="ticker-item">Progress Tracking <span>•</span></span>
+    <span class="ticker-item">Strength Training <span>•</span></span><span class="ticker-item">Weight Loss <span>•</span></span><span class="ticker-item">Personal Coaching <span>•</span></span><span class="ticker-item">Nutrition Plans <span>•</span></span><span class="ticker-item">Group Classes <span>•</span></span><span class="ticker-item">Body Transformation <span>•</span></span><span class="ticker-item">Muscle Building <span>•</span></span><span class="ticker-item">Endurance Training <span>•</span></span><span class="ticker-item">Recovery Science <span>•</span></span><span class="ticker-item">Progress Tracking <span>•</span></span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center">
+      <div>
+        <div style="font-size:.78rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--primary);margin-bottom:16px">Why IronForge</div>
+        <h2 style="margin-bottom:20px">EVERYTHING TO <em style="color:var(--primary)">WIN</em></h2>
+        <p style="font-size:1rem;margin-bottom:32px;line-height:1.7">One platform. Unlimited potential. Built for athletes serious about results.</p>
+        <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:32px">
+          <div style="display:flex;align-items:flex-start;gap:14px"><div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(232,255,60,.1);display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0"><i class="bi bi-check-lg"></i></div><div><div style="color:var(--text);font-weight:600;margin-bottom:2px">Personalized Programs</div><div style="font-size:.85rem;color:var(--text-dim)">AI-matched plans for your exact goals and level</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:14px"><div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(255,75,38,.1);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0"><i class="bi bi-check-lg"></i></div><div><div style="color:var(--text);font-weight:600;margin-bottom:2px">Expert Trainers</div><div style="font-size:.85rem;color:var(--text-dim)">Book certified coaches for personal or group sessions</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:14px"><div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(0,212,255,.1);display:flex;align-items:center;justify-content:center;color:var(--accent2);flex-shrink:0"><i class="bi bi-check-lg"></i></div><div><div style="color:var(--text);font-weight:600;margin-bottom:2px">Nutrition Science</div><div style="font-size:.85rem;color:var(--text-dim)">28-food library with macro tracking and meal plans</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:14px"><div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;color:var(--success);flex-shrink:0"><i class="bi bi-check-lg"></i></div><div><div style="color:var(--text);font-weight:600;margin-bottom:2px">Progress Analytics</div><div style="font-size:.85rem;color:var(--text-dim)">Visual charts for weight, BMI, and body measurements</div></div></div>
+        </div>
+        <a href="{% url 'account_signup' %}" class="btn btn-primary">Get Started Free</a>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="feat-card" data-aos>
+          <div style="font-size:2rem;margin-bottom:16px">🏋️</div>
+          <h4 style="color:var(--text);margin-bottom:6px;font-size:1rem">18+ Exercises</h4>
+          <p style="font-size:.82rem;max-width:none">Full library with instructions and muscle groups</p>
+        </div>
+        <div class="feat-card" data-aos style="animation-delay:.1s">
+          <div style="font-size:2rem;margin-bottom:16px">🥗</div>
+          <h4 style="color:var(--text);margin-bottom:6px;font-size:1rem">28 Foods Tracked</h4>
+          <p style="font-size:.82rem;max-width:none">Complete macro and calorie database</p>
+        </div>
+        <div class="feat-card" data-aos style="animation-delay:.2s">
+          <div style="font-size:2rem;margin-bottom:16px">📅</div>
+          <h4 style="color:var(--text);margin-bottom:6px;font-size:1rem">Easy Booking</h4>
+          <p style="font-size:.82rem;max-width:none">1-click session booking with any trainer</p>
+        </div>
+        <div class="feat-card" data-aos style="animation-delay:.3s">
+          <div style="font-size:2rem;margin-bottom:16px">📈</div>
+          <h4 style="color:var(--text);margin-bottom:6px;font-size:1rem">Progress Charts</h4>
+          <p style="font-size:.82rem;max-width:none">Track weight, body fat and measurements</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRAMS -->
+{% if featured_programs %}
+<section class="section" style="background:var(--dark)">
+  <div class="container">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:48px;flex-wrap:wrap;gap:16px">
+      <div>
+        <div style="font-size:.78rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--primary);margin-bottom:8px">Training</div>
+        <h2>FEATURED <em style="color:var(--primary)">PROGRAMS</em></h2>
+        <p>Science-backed plans for every goal and level.</p>
+      </div>
+      <a href="{% url 'account_signup' %}" class="btn btn-ghost">See All Programs <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="grid-3">
+      {% for prog in featured_programs %}
+      <div class="card" data-aos style="animation-delay:{{ forloop.counter0 }}00ms">
+        <div style="height:160px;background:linear-gradient(135deg,#161616,#222);display:flex;align-items:center;justify-content:center;position:relative">
+          <i class="bi bi-activity" style="font-size:3.5rem;color:rgba(232,255,60,.12)"></i>
+          <div style="position:absolute;top:12px;left:12px;display:flex;gap:6px">
+            <span class="card-tag" style="font-size:.68rem">{{ prog.get_level_display }}</span>
+            <span class="card-tag accent" style="font-size:.68rem">{{ prog.get_goal_display }}</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <h4 style="color:var(--text);margin-bottom:8px">{{ prog.title }}</h4>
+          <p style="font-size:.85rem;margin-bottom:16px">{{ prog.description|truncatechars:85 }}</p>
+          <div style="display:flex;gap:16px;font-size:.8rem;color:var(--text-dim);margin-bottom:16px">
+            <span><i class="bi bi-calendar3" style="color:var(--primary)"></i> {{ prog.duration_weeks }}wk</span>
+            <span><i class="bi bi-arrow-repeat" style="color:var(--primary)"></i> {{ prog.days_per_week }}x/wk</span>
+            <span><i class="bi bi-layers" style="color:var(--primary)"></i> {{ prog.days.count }} days</span>
+          </div>
+          <a href="{% url 'account_signup' %}" class="btn btn-ghost btn-sm btn-full">View Program <i class="bi bi-arrow-right"></i></a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:56px">
+      <div style="font-size:.78rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--primary);margin-bottom:12px">Simple Pricing</div>
+      <h2>CHOOSE YOUR <em style="color:var(--primary)">PLAN</em></h2>
+      <p style="margin:0 auto;max-width:480px">No contracts. Cancel anytime. Start crushing your goals today.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat({{ membership_plans|length }},1fr);gap:24px;max-width:1000px;margin:0 auto">
+      {% for plan in membership_plans %}
+      <div class="pricing-card {% if plan.highlighted %}featured{% endif %}" data-aos style="animation-delay:{{ forloop.counter0 }}00ms">
+        {% if plan.highlighted %}<div class="pricing-badge">MOST POPULAR</div>{% endif %}
+        <div>
+          <div class="pricing-name">{{ plan.name|upper }}</div>
+          <div class="pricing-price" style="margin-top:12px">
+            <div class="pricing-amount">${{ plan.price }}</div>
+            <div class="pricing-period">/mo</div>
+          </div>
+        </div>
+        <ul class="pricing-features">
+          {% for feat in plan.features %}<li><i class="bi bi-check-circle-fill"></i>{{ feat }}</li>{% endfor %}
+        </ul>
+        <a href="{% url 'account_signup' %}" class="btn {% if plan.highlighted %}btn-primary{% else %}btn-ghost{% endif %} btn-full">Get Started</a>
+      </div>
+      {% empty %}
+      <div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-dim)">No plans configured. Run: <code>python manage.py seed_data</code></div>
+      {% endfor %}
+    </div>
+    <p style="text-align:center;font-size:.82rem;margin-top:32px;color:var(--muted)">🔒 Secured by Stripe &nbsp;·&nbsp; ✓ Cancel anytime &nbsp;·&nbsp; 💳 All major cards</p>
+  </div>
+</section>
+
+<!-- TRAINERS -->
+{% if trainers %}
+<section class="section" style="background:var(--dark)">
+  <div class="container">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:48px;flex-wrap:wrap;gap:16px">
+      <div>
+        <div style="font-size:.78rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--primary);margin-bottom:8px">Our Team</div>
+        <h2>ELITE <em style="color:var(--primary)">COACHES</em></h2>
+      </div>
+      <a href="{% url 'account_signup' %}" class="btn btn-ghost">Meet All Trainers <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat({% if trainers|length >= 4 %}4{% else %}{{ trainers|length }}{% endif %},1fr);gap:20px">
+      {% for trainer in trainers %}
+      <div class="card" data-aos style="animation-delay:{{ forloop.counter0 }}00ms">
+        <div style="height:220px;background:linear-gradient(160deg,#161616,#1e1e1e);display:flex;align-items:center;justify-content:center;overflow:hidden">
+          {% if trainer.profile_image %}
+            <img src="{{ trainer.profile_image.url }}" alt="{{ trainer.get_full_name }}" style="width:100%;height:100%;object-fit:cover"/>
+          {% else %}
+            <div style="width:80px;height:80px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:2rem;color:var(--black)">{{ trainer.first_name.0 }}{{ trainer.last_name.0 }}</div>
+          {% endif %}
+        </div>
+        <div class="card-body" style="padding:18px">
+          {% if trainer.trainer_profile %}<div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin-bottom:5px">{{ trainer.trainer_profile.get_specialization_display }}</div>{% endif %}
+          <h4 style="color:var(--text);margin-bottom:5px;font-size:.95rem">{{ trainer.get_full_name }}</h4>
+          {% if trainer.trainer_profile %}
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;font-size:.8rem;color:var(--text-dim)">
+            <span style="color:var(--warning)"><i class="bi bi-star-fill"></i> {{ trainer.trainer_profile.rating|floatformat:1 }}</span>
+            <span>{{ trainer.trainer_profile.years_experience }}yr exp</span>
+          </div>
+          {% endif %}
+          <a href="{% url 'account_signup' %}" class="btn btn-ghost btn-sm btn-full">Book Session</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- HOW IT WORKS -->
+<section class="section">
+  <div class="container" style="max-width:900px">
+    <div style="text-align:center;margin-bottom:56px">
+      <h2>HOW IT <em style="color:var(--primary)">WORKS</em></h2>
+      <p style="margin:0 auto">3 steps to your transformation.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;text-align:center">
+      <div data-aos>
+        <div style="width:80px;height:80px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;background:var(--dark)">
+          <div style="font-family:var(--font-display);font-size:2.5rem;color:var(--primary);line-height:1">1</div>
+        </div>
+        <h4 style="color:var(--text);margin-bottom:10px">Create Account</h4>
+        <p style="font-size:.88rem">Sign up free. Tell us your goals, level, and preferences to get matched instantly.</p>
+      </div>
+      <div data-aos style="animation-delay:150ms">
+        <div style="width:80px;height:80px;border-radius:50%;border:2px solid rgba(232,255,60,.4);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;background:var(--dark)">
+          <div style="font-family:var(--font-display);font-size:2.5rem;color:var(--primary);line-height:1">2</div>
+        </div>
+        <h4 style="color:var(--text);margin-bottom:10px">Pick Your Plan</h4>
+        <p style="font-size:.88rem">Choose Basic, Premium, or VIP. Get custom workouts and nutrition plans instantly.</p>
+      </div>
+      <div data-aos style="animation-delay:300ms">
+        <div style="width:80px;height:80px;border-radius:50%;border:2px solid rgba(232,255,60,.7);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;background:var(--dark)">
+          <div style="font-family:var(--font-display);font-size:2.5rem;color:var(--primary);line-height:1">3</div>
+        </div>
+        <h4 style="color:var(--text);margin-bottom:10px">Start Training</h4>
+        <p style="font-size:.88rem">Follow your program, book trainer sessions, log food, and track your progress daily.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section" style="background:var(--dark)">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:48px">
+      <h2>REAL <em style="color:var(--primary)">RESULTS</em></h2>
+      <p style="margin:0 auto">What our members actually say.</p>
+    </div>
+    <div class="grid-3">
+      <div class="testimonial-card" data-aos>
+        <div style="color:var(--warning);font-size:.9rem;margin-bottom:14px">★★★★★</div>
+        <p style="font-size:.95rem;line-height:1.7;margin-bottom:20px;max-width:none;color:var(--text)">"Lost 12kg in 3 months on the Fat Loss program. The nutrition tracking changed everything. Best investment I've made."</p>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--black);font-size:.82rem">MK</div>
+          <div><div style="color:var(--text);font-weight:600;font-size:.88rem">Mohamed K.</div><div style="color:var(--text-dim);font-size:.78rem">Premium Member · 6 months</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card" data-aos style="animation-delay:100ms">
+        <div style="color:var(--warning);font-size:.9rem;margin-bottom:14px">★★★★★</div>
+        <p style="font-size:.95rem;line-height:1.7;margin-bottom:20px;max-width:none;color:var(--text)">"The PPL program with Coach Ahmed completely transformed my physique. Gained 8kg of lean muscle in 4 months."</p>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:.82rem">SR</div>
+          <div><div style="color:var(--text);font-weight:600;font-size:.88rem">Sara R.</div><div style="color:var(--text-dim);font-size:.78rem">VIP Member · 1 year</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card" data-aos style="animation-delay:200ms">
+        <div style="color:var(--warning);font-size:.9rem;margin-bottom:14px">★★★★☆</div>
+        <p style="font-size:.95rem;line-height:1.7;margin-bottom:20px;max-width:none;color:var(--text)">"Booking is so easy, diet plans are structured, progress tracker keeps me motivated. The whole platform is 10/10."</p>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--black);font-size:.82rem">KA</div>
+          <div><div style="color:var(--text);font-weight:600;font-size:.88rem">Karim A.</div><div style="color:var(--text-dim);font-size:.78rem">Basic Member · 3 months</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:120px 24px;text-align:center;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(232,255,60,.04),transparent)"></div>
+  <div style="position:relative;z-index:1;max-width:600px;margin:0 auto">
+    <h2 style="margin-bottom:20px" data-aos>READY TO <em style="color:var(--primary)">TRANSFORM?</em></h2>
+    <p style="font-size:1.1rem;margin-bottom:40px" data-aos>Join the community crushing their goals every day.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap" data-aos>
+      <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg"><i class="bi bi-lightning-charge-fill"></i> Join Now — Free</a>
+      <a href="{% url 'sessions' %}" class="btn btn-ghost btn-lg">Browse Sessions</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

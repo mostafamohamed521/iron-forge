@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Log Progress — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container" style="max-width:640px">
+
+    <div style="margin-bottom:32px">
+      <a href="{% url 'profile' %}" style="color:var(--text-dim); font-size:.9rem"><i class="bi bi-arrow-left"></i> Back to Profile</a>
+      <h1 class="page-title" style="margin-top:16px">Log Progress Entry</h1>
+      <p class="page-subtitle">Track your body measurements to see your transformation over time.</p>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="card">
+        <div class="card-body">
+
+          <div class="form-group">
+            <label class="form-label">Date <span style="color:var(--danger)">*</span></label>
+            {{ form.date }}
+            {% if form.date.errors %}<div style="color:var(--danger);font-size:.82rem;margin-top:4px">{{ form.date.errors.0 }}</div>{% endif %}
+          </div>
+
+          <h4 style="color:var(--text-dim); font-size:.8rem; text-transform:uppercase; letter-spacing:.1em; margin:24px 0 16px">Body Measurements</h4>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Weight (kg)</label>
+              {{ form.weight_kg }}
+              {% if form.weight_kg.errors %}<div style="color:var(--danger);font-size:.82rem;margin-top:4px">{{ form.weight_kg.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Body Fat (%)</label>
+              {{ form.body_fat_percentage }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Muscle Mass (kg)</label>
+              {{ form.muscle_mass_kg }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Chest (cm)</label>
+              {{ form.chest_cm }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Waist (cm)</label>
+              {{ form.waist_cm }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hips (cm)</label>
+              {{ form.hips_cm }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Notes</label>
+            {{ form.notes }}
+          </div>
+
+          <div style="display:flex; gap:12px; margin-top:8px">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Save Entry</button>
+            <a href="{% url 'profile' %}" class="btn btn-ghost">Cancel</a>
+          </div>
+
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

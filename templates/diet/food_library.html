@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Food Library — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container">
+
+    <div class="section-header">
+      <h2>FOOD <em style="color:var(--primary)">LIBRARY</em></h2>
+      <p>Complete nutritional database for tracking your daily intake.</p>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:40px; align-items:flex-end">
+      <div>
+        <label class="form-label">Category</label>
+        <select name="category" class="form-control" style="width:auto" onchange="this.form.submit()">
+          <option value="">All Categories</option>
+          {% for val, label in categories %}
+          <option value="{{ val }}" {% if request.GET.category == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Search</label>
+        <input type="text" name="q" class="form-control" style="width:200px" placeholder="e.g. chicken, rice..." value="{{ request.GET.q }}" />
+      </div>
+      <button type="submit" class="btn btn-ghost btn-sm">Search</button>
+      {% if request.GET.q or request.GET.category %}
+      <a href="{% url 'food_library' %}" class="btn btn-ghost btn-sm">Clear</a>
+      {% endif %}
+    </form>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Food Item</th>
+            <th>Category</th>
+            <th>Calories / 100g</th>
+            <th>Protein (g)</th>
+            <th>Carbs (g)</th>
+            <th>Fat (g)</th>
+            <th>Fiber (g)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for food in foods %}
+          <tr>
+            <td style="color:var(--text); font-weight:500">{{ food.name }}</td>
+            <td><span class="card-tag" style="font-size:.7rem">{{ food.get_category_display }}</span></td>
+            <td style="color:var(--primary); font-weight:600">{{ food.calories_per_100g }}</td>
+            <td>{{ food.protein_per_100g }}</td>
+            <td>{{ food.carbs_per_100g }}</td>
+            <td>{{ food.fat_per_100g }}</td>
+            <td>{{ food.fiber_per_100g }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" style="text-align:center; padding:60px; color:var(--text-dim)">
+              <i class="bi bi-search" style="font-size:2rem; display:block; margin-bottom:12px"></i>
+              No foods found. Try a different search term.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if is_paginated %}
+    <div style="display:flex; justify-content:center; gap:8px; margin-top:32px">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}&category={{ request.GET.category }}" class="btn btn-ghost btn-sm">← Prev</a>
+      {% endif %}
+      <span style="padding:8px 16px; color:var(--text-dim); font-size:.9rem">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}&category={{ request.GET.category }}" class="btn btn-ghost btn-sm">Next →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

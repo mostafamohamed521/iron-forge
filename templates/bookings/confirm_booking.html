@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Confirm Booking — {{ session.title }} — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container" style="max-width:600px">
+
+    <div style="margin-bottom:32px">
+      <a href="{% url 'sessions' %}" style="color:var(--text-dim); font-size:.9rem"><i class="bi bi-arrow-left"></i> Back to Sessions</a>
+      <h1 class="page-title" style="margin-top:16px">Confirm Booking</h1>
+    </div>
+
+    <!-- Session details -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="card-body">
+        <h4 style="color:var(--text-dim); font-size:.8rem; text-transform:uppercase; letter-spacing:.1em; margin-bottom:20px">Session Details</h4>
+
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px">
+          <div style="width:60px;height:60px;border-radius:var(--radius-lg);background:rgba(232,255,60,0.08);border:1px solid rgba(232,255,60,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="bi bi-person-video2" style="font-size:1.6rem; color:var(--primary)"></i>
+          </div>
+          <div>
+            <h3 style="color:var(--text); margin-bottom:4px">{{ session.title }}</h3>
+            <span class="card-tag {% if session.session_type == 'personal' %}accent{% elif session.session_type == 'online' %}cyan{% endif %}">
+              {{ session.get_session_type_display }}
+            </span>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:12px; padding:20px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:20px">
+          <div style="display:flex; justify-content:space-between; font-size:.9rem">
+            <span style="color:var(--text-dim)"><i class="bi bi-person"></i> Trainer</span>
+            <span style="color:var(--text); font-weight:500">{{ session.trainer.get_full_name }}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:.9rem">
+            <span style="color:var(--text-dim)"><i class="bi bi-calendar3"></i> Date</span>
+            <span style="color:var(--text); font-weight:500">{{ session.date|date:"l, N j, Y" }}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:.9rem">
+            <span style="color:var(--text-dim)"><i class="bi bi-clock"></i> Time</span>
+            <span style="color:var(--text); font-weight:500">{{ session.start_time|time:"g:i A" }} – {{ session.end_time|time:"g:i A" }}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:.9rem">
+            <span style="color:var(--text-dim)"><i class="bi bi-geo-alt"></i> Location</span>
+            <span style="color:var(--text); font-weight:500">{{ session.location }}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:.9rem">
+            <span style="color:var(--text-dim)"><i class="bi bi-people"></i> Spots Left</span>
+            <span style="color:var(--success); font-weight:500">{{ session.spots_remaining }} available</span>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <span style="color:var(--text-dim)">Session Fee</span>
+          <span style="font-family:var(--font-display); font-size:2rem; color:var(--text)">
+            {% if session.price > 0 %}${{ session.price }}{% else %}Free with membership{% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes + confirm -->
+    <form method="post">
+      {% csrf_token %}
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">Notes for Trainer (optional)</label>
+            <textarea name="notes" class="form-control" rows="3" placeholder="e.g. injuries, specific goals, questions..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px">
+        <button type="submit" class="btn btn-primary btn-lg" style="flex:1">
+          <i class="bi bi-check-circle-fill"></i> Confirm Booking
+        </button>
+        <a href="{% url 'sessions' %}" class="btn btn-ghost btn-lg">Cancel</a>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

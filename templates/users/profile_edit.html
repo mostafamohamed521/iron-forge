@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Edit Profile — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container" style="max-width:760px">
+
+    <div style="margin-bottom:32px">
+      <a href="{% url 'profile' %}" style="color:var(--text-dim); font-size:.9rem"><i class="bi bi-arrow-left"></i> Back to Profile</a>
+      <h1 class="page-title" style="margin-top:16px">Edit Profile</h1>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-body">
+          <h4 style="color:var(--text); margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border)">
+            <i class="bi bi-person" style="color:var(--primary)"></i> Personal Information
+          </h4>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              {{ form.first_name }}
+              {% if form.first_name.errors %}<div style="color:var(--danger);font-size:.82rem;margin-top:4px">{{ form.first_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              {{ form.last_name }}
+              {% if form.last_name.errors %}<div style="color:var(--danger);font-size:.82rem;margin-top:4px">{{ form.last_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              {{ form.phone }}
+              {% if form.phone.errors %}<div style="color:var(--danger);font-size:.82rem;margin-top:4px">{{ form.phone.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date of Birth</label>
+              {{ form.date_of_birth }}
+              {% if form.date_of_birth.errors %}<div style="color:var(--danger);font-size:.82rem;margin-top:4px">{{ form.date_of_birth.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gender</label>
+              {{ form.gender }}
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bio</label>
+            {{ form.bio }}
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-body">
+          <h4 style="color:var(--text); margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border)">
+            <i class="bi bi-image" style="color:var(--primary)"></i> Profile Photo
+          </h4>
+          {% if user.profile_image %}
+          <div style="margin-bottom:16px">
+            <img src="{{ user.profile_image.url }}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid var(--border-hi)" />
+            <p style="font-size:.82rem;margin-top:8px;max-width:none">Current photo. Upload a new one to replace it.</p>
+          </div>
+          {% endif %}
+          {{ form.profile_image }}
+          <p style="font-size:.8rem;margin-top:8px;max-width:none;color:var(--muted)">JPEG, PNG or WebP · Max 5MB · Will be resized to 400×400px</p>
+          {% if form.profile_image.errors %}<div style="color:var(--danger);font-size:.82rem;margin-top:4px">{{ form.profile_image.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-body">
+          <h4 style="color:var(--text); margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border)">
+            <i class="bi bi-activity" style="color:var(--primary)"></i> Physical Stats
+          </h4>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Height (cm)</label>
+              {{ form.height_cm }}
+              {% if form.height_cm.errors %}<div style="color:var(--danger);font-size:.82rem;margin-top:4px">{{ form.height_cm.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Weight (kg)</label>
+              {{ form.weight_kg }}
+              {% if form.weight_kg.errors %}<div style="color:var(--danger);font-size:.82rem;margin-top:4px">{{ form.weight_kg.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+          {% if user.bmi %}
+          <div style="padding:12px 16px; background:rgba(232,255,60,0.06); border:1px solid rgba(232,255,60,0.15); border-radius:var(--radius); font-size:.9rem">
+            <i class="bi bi-calculator" style="color:var(--primary)"></i>
+            Your current BMI: <strong style="color:var(--primary)">{{ user.bmi }}</strong>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:32px">
+        <div class="card-body">
+          <h4 style="color:var(--text); margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border)">
+            <i class="bi bi-bullseye" style="color:var(--primary)"></i> Fitness Goals
+          </h4>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Primary Goal</label>
+              {{ form.fitness_goal }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fitness Level</label>
+              {{ form.fitness_level }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="bi bi-check-lg"></i> Save Changes
+        </button>
+        <a href="{% url 'profile' %}" class="btn btn-ghost btn-lg">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

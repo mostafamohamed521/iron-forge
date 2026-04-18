@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container" style="max-width:960px">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:40px">
+      <div>
+        <h1 class="page-title">My Bookings</h1>
+        <p class="page-subtitle">Manage your upcoming and past training sessions.</p>
+      </div>
+      <a href="{% url 'sessions' %}" class="btn btn-primary"><i class="bi bi-calendar-plus"></i> Book Session</a>
+    </div>
+
+    <!-- Upcoming -->
+    <h4 style="color:var(--text); margin-bottom:16px; font-size:1rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-dim)">Upcoming</h4>
+    {% if upcoming %}
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:48px">
+      {% for booking in upcoming %}
+      <div class="card">
+        <div class="card-body" style="display:flex; align-items:center; gap:20px; padding:20px 24px">
+          <div style="width:56px;height:56px;border-radius:var(--radius-lg);background:rgba(232,255,60,0.08);border:1px solid rgba(232,255,60,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="bi bi-person-video2" style="font-size:1.4rem; color:var(--primary)"></i>
+          </div>
+          <div style="flex:1; min-width:0">
+            <div style="font-weight:600; color:var(--text); margin-bottom:4px">{{ booking.session.title }}</div>
+            <div style="font-size:.85rem; color:var(--text-dim); display:flex; gap:16px; flex-wrap:wrap">
+              <span><i class="bi bi-calendar3"></i> {{ booking.session.date|date:"D, N j, Y" }}</span>
+              <span><i class="bi bi-clock"></i> {{ booking.session.start_time|time:"g:i A" }}</span>
+              <span><i class="bi bi-person"></i> {{ booking.session.trainer.get_full_name }}</span>
+              <span><i class="bi bi-geo-alt"></i> {{ booking.session.location }}</span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; flex-shrink:0">
+            <span class="card-tag" style="font-size:.7rem">{{ booking.get_status_display }}</span>
+            <a href="{% url 'cancel_booking' booking.id %}" class="btn btn-ghost btn-sm"
+               data-confirm="Cancel booking for {{ booking.session.title }}?">Cancel</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:48px 20px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); margin-bottom:48px">
+      <i class="bi bi-calendar-x" style="font-size:2.5rem; color:var(--border-hi)"></i>
+      <p style="margin-top:12px">No upcoming sessions. <a href="{% url 'sessions' %}" style="color:var(--primary)">Book one now!</a></p>
+    </div>
+    {% endif %}
+
+    <!-- Past -->
+    <h4 style="color:var(--text-dim); margin-bottom:16px; font-size:1rem; text-transform:uppercase; letter-spacing:.1em">Past Sessions</h4>
+    {% if past %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Session</th>
+            <th>Trainer</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for booking in past %}
+          <tr>
+            <td style="color:var(--text)">{{ booking.session.title }}</td>
+            <td>{{ booking.session.trainer.get_full_name }}</td>
+            <td>{{ booking.session.date|date:"N j, Y" }}</td>
+            <td><span class="card-tag" style="font-size:.7rem">{{ booking.get_status_display }}</span></td>
+            <td>
+              {% if booking.rating %}
+                <span style="color:var(--warning)">
+                  {% for i in "12345" %}
+                    <i class="bi bi-star{% if forloop.counter <= booking.rating %}-fill{% endif %}"></i>
+                  {% endfor %}
+                </span>
+              {% elif booking.status == 'completed' %}
+                <a href="{% url 'rate_session' booking.id %}" style="color:var(--primary); font-size:.85rem">Rate</a>
+              {% else %}
+                <span style="color:var(--muted)">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p style="color:var(--text-dim); font-size:.9rem">No past sessions yet.</p>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

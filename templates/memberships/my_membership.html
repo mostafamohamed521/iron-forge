@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}My Membership — IronForge{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--nav-h) + 60px); padding-bottom:100px">
+  <div class="container" style="max-width:760px">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:40px">
+      <div>
+        <h1 class="page-title">My Membership</h1>
+        <p class="page-subtitle">Manage your subscription and billing history.</p>
+      </div>
+      <a href="{% url 'membership_plans' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-arrow-up-circle"></i> Upgrade Plan
+      </a>
+    </div>
+
+    <!-- Active membership -->
+    {% if active %}
+    <div class="card" style="margin-bottom:24px; border-color:{% if active.plan.name == 'vip' %}rgba(255,75,38,.4){% elif active.plan.name == 'premium' %}rgba(232,255,60,.4){% else %}var(--border-hi){% endif %}">
+      <div class="card-body">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px">
+          <div>
+            <div style="font-size:.8rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.1em; margin-bottom:8px">Current Plan</div>
+            <h3 style="color:var(--text); margin-bottom:8px">{{ active.plan.display_name }}</h3>
+            <span class="membership-badge {{ active.plan.name }}">{{ active.plan.name|upper }}</span>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:var(--font-display); font-size:2.5rem; color:var(--text); line-height:1">${{ active.plan.price }}</div>
+            <div style="font-size:.82rem; color:var(--text-dim)">per {{ active.plan.get_billing_cycle_display|lower }}</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:32px; padding:20px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:20px">
+          <div>
+            <div style="font-size:.8rem; color:var(--text-dim); margin-bottom:4px">Start Date</div>
+            <div style="font-weight:600; color:var(--text)">{{ active.start_date|date:"N j, Y" }}</div>
+          </div>
+          <div>
+            <div style="font-size:.8rem; color:var(--text-dim); margin-bottom:4px">Renewal Date</div>
+            <div style="font-weight:600; color:var(--text)">{{ active.end_date|date:"N j, Y" }}</div>
+          </div>
+          <div>
+            <div style="font-size:.8rem; color:var(--text-dim); margin-bottom:4px">Days Remaining</div>
+            <div style="font-weight:600; color:{% if active.days_remaining < 7 %}var(--danger){% elif active.days_remaining < 14 %}var(--warning){% else %}var(--success){% endif %}">
+              {{ active.days_remaining }} days
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex; justify-content:space-between; font-size:.8rem; color:var(--text-dim); margin-bottom:8px">
+            <span>Plan duration</span>
+            <span>{{ active.days_remaining }} / {{ active.plan.duration_days }} days remaining</span>
+          </div>
+          <div class="progress-bar" style="height:8px">
+            <div class="progress-fill" style="width:{% widthratio active.days_remaining active.plan.duration_days 100 %}%"></div>
+          </div>
+        </div>
+
+        {% if active.plan.features %}
+        <div style="margin-top:24px">
+          <div style="font-size:.8rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.1em; margin-bottom:12px">Included Features</div>
+          <ul style="display:flex; flex-direction:column; gap:8px">
+            {% for feat in active.plan.features %}
+            <li style="display:flex; align-items:center; gap:10px; font-size:.9rem; color:var(--text-dim)">
+              <i class="bi bi-check-circle-fill" style="color:var(--primary)"></i> {{ feat }}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:60px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); margin-bottom:24px">
+      <i class="bi bi-credit-card-x" style="font-size:3rem; color:var(--border-hi)"></i>
+      <h4 style="color:var(--text); margin:16px 0 8px">No Active Membership</h4>
+      <p style="margin-bottom:24px">Subscribe to unlock full platform access.</p>
+      <a href="{% url 'membership_plans' %}" class="btn btn-primary">View Plans</a>
+    </div>
+    {% endif %}
+
+    <!-- History -->
+    {% if memberships %}
+    <h4 style="color:var(--text-dim); font-size:.8rem; text-transform:uppercase; letter-spacing:.1em; margin-bottom:16px">Subscription History</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Plan</th><th>Start</th><th>End</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for m in memberships %}
+          <tr>
+            <td style="color:var(--text)">{{ m.plan.display_name }}</td>
+            <td>{{ m.start_date|date:"N j, Y" }}</td>
+            <td>{{ m.end_date|date:"N j, Y" }}</td>
+            <td>
+              <span class="card-tag {% if m.status == 'active' %}{% else %}accent{% endif %}" style="font-size:.7rem">
+                {{ m.get_status_display }}
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

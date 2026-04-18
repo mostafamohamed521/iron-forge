@@ -1,0 +1,177 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Admin Dashboard — IronForge{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <h1>Dashboard</h1>
+    <p style="color:var(--text-dim); margin:0">Platform overview — {{ today|date:"l, N j, Y" }}</p>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-icon" style="background:rgba(232,255,60,.1); color:var(--primary)"><i class="bi bi-people-fill"></i></div>
+    <div class="kpi-value">{{ total_users }}</div>
+    <div class="kpi-label">Total Members</div>
+    <div class="kpi-change" style="color:var(--success)"><i class="bi bi-arrow-up"></i> {{ new_users_month }} this month</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon" style="background:rgba(34,197,94,.1); color:var(--success)"><i class="bi bi-person-check-fill"></i></div>
+    <div class="kpi-value">{{ active_members }}</div>
+    <div class="kpi-label">Active Subscriptions</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon" style="background:rgba(255,75,38,.1); color:var(--accent)"><i class="bi bi-currency-dollar"></i></div>
+    <div class="kpi-value">${{ monthly_revenue|floatformat:0 }}</div>
+    <div class="kpi-label">Revenue This Month</div>
+    {% if last_revenue %}
+    <div class="kpi-change {% if monthly_revenue >= last_revenue %}" style="color:var(--success){% else %}" style="color:var(--danger){% endif %}">
+      {% if monthly_revenue >= last_revenue %}<i class="bi bi-arrow-up"></i>{% else %}<i class="bi bi-arrow-down"></i>{% endif %}
+      vs ${{ last_revenue|floatformat:0 }} last month
+    </div>
+    {% endif %}
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon" style="background:rgba(0,212,255,.1); color:var(--accent2)"><i class="bi bi-calendar-check-fill"></i></div>
+    <div class="kpi-value">{{ upcoming_sessions }}</div>
+    <div class="kpi-label">Upcoming Sessions</div>
+    <div class="kpi-change" style="color:var(--text-dim)">{{ total_sessions }} completed total</div>
+  </div>
+</div>
+
+<!-- Charts row -->
+<div style="display:grid; grid-template-columns:2fr 1fr; gap:20px; margin-bottom:24px">
+
+  <!-- Revenue chart -->
+  <div class="card">
+    <div class="card-body">
+      <h4 style="color:var(--text); margin-bottom:20px"><i class="bi bi-bar-chart-fill" style="color:var(--primary)"></i> Revenue — Last 6 Months</h4>
+      <canvas id="revenueChart" height="80"></canvas>
+    </div>
+  </div>
+
+  <!-- Plan distribution -->
+  <div class="card">
+    <div class="card-body">
+      <h4 style="color:var(--text); margin-bottom:20px"><i class="bi bi-pie-chart-fill" style="color:var(--accent)"></i> Plan Distribution</h4>
+      <canvas id="planChart" height="160"></canvas>
+      <div style="margin-top:16px; display:flex; flex-direction:column; gap:8px">
+        {% for item in plan_data %}
+        <div style="display:flex; align-items:center; justify-content:space-between; font-size:.85rem">
+          <span style="color:var(--text-dim)">{{ item.plan__display_name|default:"Unknown" }}</span>
+          <span style="font-weight:600; color:var(--text)">{{ item.count }}</span>
+        </div>
+        {% empty %}
+        <p style="color:var(--text-dim); font-size:.85rem">No active subscriptions.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tables row -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px">
+
+  <!-- Recent signups -->
+  <div class="data-table-wrap">
+    <div class="data-table-header">
+      <h4 style="color:var(--text); font-size:.95rem; margin:0"><i class="bi bi-person-plus" style="color:var(--primary)"></i> Recent Signups</h4>
+      <a href="{% url 'admin_users' %}" class="btn btn-ghost btn-sm">View All</a>
+    </div>
+    <table>
+      <thead><tr><th>Name</th><th>Email</th><th>Joined</th></tr></thead>
+      <tbody>
+        {% for u in recent_users %}
+        <tr>
+          <td><a href="{% url 'admin_user_detail' u.id %}" style="color:var(--primary)">{{ u.get_full_name|default:"—" }}</a></td>
+          <td style="font-size:.82rem">{{ u.email }}</td>
+          <td style="font-size:.82rem">{{ u.created_at|date:"N j" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" style="text-align:center; padding:24px; color:var(--muted)">No members yet</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Recent payments -->
+  <div class="data-table-wrap">
+    <div class="data-table-header">
+      <h4 style="color:var(--text); font-size:.95rem; margin:0"><i class="bi bi-receipt" style="color:var(--primary)"></i> Recent Payments</h4>
+      <a href="{% url 'admin_payments' %}" class="btn btn-ghost btn-sm">View All</a>
+    </div>
+    <table>
+      <thead><tr><th>User</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for p in recent_payments %}
+        <tr>
+          <td style="font-size:.85rem; color:var(--text)">{{ p.user.email }}</td>
+          <td style="color:var(--primary); font-weight:600">${{ p.amount }}</td>
+          <td>
+            <span style="font-size:.72rem; padding:3px 8px; border-radius:4px;
+              {% if p.status == 'succeeded' %}background:rgba(34,197,94,.1); color:var(--success)
+              {% elif p.status == 'pending' %}background:rgba(245,158,11,.1); color:var(--warning)
+              {% else %}background:rgba(239,68,68,.1); color:var(--danger){% endif %}">
+              {{ p.get_status_display|upper }}
+            </span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" style="text-align:center; padding:24px; color:var(--muted)">No payments yet</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Revenue bar chart
+new Chart(document.getElementById('revenueChart'), {
+  type: 'bar',
+  data: {
+    labels: {{ chart_labels|safe }},
+    datasets: [{
+      label: 'Revenue ($)',
+      data: {{ chart_data|safe }},
+      backgroundColor: 'rgba(232,255,60,0.15)',
+      borderColor: '#e8ff3c',
+      borderWidth: 2,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#999' }, grid: { color: '#252525' } },
+      y: { ticks: { color: '#999', callback: v => '$' + v }, grid: { color: '#252525' } }
+    }
+  }
+});
+
+// Plan doughnut chart
+const planLabels = [{% for item in plan_data %}'{{ item.plan__display_name|default:"Unknown" }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+const planCounts = [{% for item in plan_data %}{{ item.count }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+if (planCounts.length > 0) {
+  new Chart(document.getElementById('planChart'), {
+    type: 'doughnut',
+    data: {
+      labels: planLabels,
+      datasets: [{ data: planCounts, backgroundColor: ['#e8ff3c','#ff4b26','#00d4ff','#22c55e'], borderWidth: 0 }]
+    },
+    options: {
+      responsive: true,
+      cutout: '65%',
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+</script>
+{% endblock %}
